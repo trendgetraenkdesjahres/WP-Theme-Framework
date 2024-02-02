@@ -2,6 +2,8 @@
 
 namespace WP_ThemeFramework\CustomTaxonomy;
 
+use WP_ThemeFramework\Utils\JsonFile;
+
 /**
  * CustomTaxonomyFile
  * Representation of a JSON File which can produce WP_Taxomies objects
@@ -10,7 +12,7 @@ namespace WP_ThemeFramework\CustomTaxonomy;
  * @link https://developer.wordpress.org/reference/functions/register_taxonomy/
  */
 
-class CustomTaxonomyFile
+class CustomTaxonomyFile extends JsonFile
 {
     public string $taxonomy_name;
     public array $taxonomy_args;
@@ -27,7 +29,7 @@ class CustomTaxonomyFile
      */
     function __construct(public string $path)
     {
-        $taxonomy = basename($path, 'php');
+        $taxonomy = basename($path, '.json');
         if (empty($taxonomy) || strlen($taxonomy) > 32) {
             _doing_it_wrong(__FUNCTION__, __('Taxonomy names must be between 1 and 32 characters in length.'), '4.2.0');
             return new \WP_Error('taxonomy_length_invalid', __('Taxonomy names must be between 1 and 32 characters in length.'));
@@ -53,32 +55,5 @@ class CustomTaxonomyFile
         } catch (\Error $e) {
             throw new \Error('oopsie');
         }
-    }
-
-
-    /**
-     * reads json file into array
-     *
-     * @param string $path path to json file
-     *
-     * @return array
-     */
-    private static function json_file_to_array($path): array
-    {
-        $file_handle = fopen($path, 'r');
-        try {
-            $array = json_decode(
-                json: fread($file_handle, filesize($path)),
-                associative: true
-            );
-        } catch (\Error $e) {
-            throw new \WP_Error(
-                code: __NAMESPACE__,
-                message: "File '$path' is invalid"
-            );
-        } finally {
-            fclose($file_handle);
-        }
-        return $array;
     }
 }

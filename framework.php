@@ -11,7 +11,7 @@ spl_autoload_register(function ($class) {
 });
 
 /**
- * CustomTaxonomy
+ * Custom Taxonomies
  * Adds the custom taxonomies, define in the taxonomies/ folder.
  * put json there, with properties as in the link
  * the slug for the taxonomy type goes by it's file name
@@ -35,8 +35,8 @@ add_action('init', function () {
 }, 0);
 
 /**
- * CustomTaxonomy
- * Adds the custom taxonomies, define in the post-types/ folder.
+ * Custom Post Types
+ * Adds the custom Post Types, define in the post-types/ folder.
  * put json of the args there, with properties as in the link
  * the slug for the post type goes by it's file name
  * @link https://developer.wordpress.org/plugins/post-types/registering-custom-post-types/
@@ -57,3 +57,43 @@ add_action('init', function () {
         $custom_taxonomie->register();
     }
 }, 0);
+
+/* blocks */
+
+use WP_ThemeFramework\CustomBlock\CustomBlock;
+
+if (!$custom_block_folders = glob(THEME_DIR . "/blocks/*", GLOB_ONLYDIR)) {
+    return;
+};
+$register_block_script =
+    "
+    const { registerBlockType } = wp.blocks;
+    const { serverSideRender: ServerSideRender } = wp;
+    const { Fragment } = wp.element;
+    ";
+foreach ($custom_block_folders as $custom_block_folder) {
+    if (!file_exists($custom_block_folder . "/block.json")) {
+        return new WP_Error("No block.json found in '$custom_block_folder'.");
+    }
+    $custom_block = new CustomBlock($custom_block_folder);
+    add_action('init', [$custom_block, 'register']);
+    $register_block_script .= "registerBlockType('$custom_block->name', " . json_encode($custom_block->args) . ")\n";
+}
+add_action(
+    'enqueue_block_editor_assets',
+    function () use ($custom_block, $register_block_script) {
+        wp_register_script("$custom_block->name", '');
+        wp_enqueue_script(
+            "$custom_block->name",
+            '',
+            ['wp', 'wp-blocks', 'wp-block-editor', 'wp-i18n'],
+            time(),
+            true
+        );
+        wp_add_inline_script(
+            "$custom_block->name",
+            $register_block_script,
+            'before'
+        );
+    }
+);

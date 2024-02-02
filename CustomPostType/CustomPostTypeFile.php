@@ -2,6 +2,8 @@
 
 namespace WP_ThemeFramework\CustomPostType;
 
+use WP_ThemeFramework\Utils\JsonFile;
+
 /**
  * CustomPostTypeFile
  * Representation of a JSON File which can produce WP_PostTypes objects
@@ -10,7 +12,7 @@ namespace WP_ThemeFramework\CustomPostType;
  * @link https://developer.wordpress.org/plugins/post-types/registering-custom-post-types/
  */
 
-class CustomPostTypeFile
+class CustomPostTypeFile extends JsonFile
 {
     public string $posttype_name;
     public array $posttype_args;
@@ -26,7 +28,7 @@ class CustomPostTypeFile
      */
     function __construct(public string $path)
     {
-        $posttype = basename($path, 'php');
+        $posttype = basename($path, '.json');
         if (empty($posttype) || strlen($posttype) > 20) {
             _doing_it_wrong(__FUNCTION__, __('PostType names must be between 1 and 20 characters in length.'), '4.2.0');
             return new \WP_Error('posttype_length_invalid', __('PostType names must be between 1 and 20 characters in length.'));
@@ -50,32 +52,5 @@ class CustomPostTypeFile
         } catch (\Error $e) {
             throw new \Error('oopsie');
         }
-    }
-
-
-    /**
-     * reads json file into array
-     *
-     * @param string $path path to json file
-     *
-     * @return array
-     */
-    private static function json_file_to_array($path): array
-    {
-        $file_handle = fopen($path, 'r');
-        try {
-            $array = json_decode(
-                json: fread($file_handle, filesize($path)),
-                associative: true
-            );
-        } catch (\Error $e) {
-            throw new \WP_Error(
-                code: __NAMESPACE__,
-                message: "File '$path' is invalid"
-            );
-        } finally {
-            fclose($file_handle);
-        }
-        return $array;
     }
 }
