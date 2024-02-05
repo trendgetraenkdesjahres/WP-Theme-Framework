@@ -8,6 +8,7 @@ class CustomBlock
     public string $name;
     public array $args;
     protected CustomBlockFile $custom_block_file;
+    protected string $render_php;
 
     public function __construct(string $path)
     {
@@ -21,9 +22,15 @@ class CustomBlock
         );
     }
 
+    public function render($block_attributes, $content)
+    {
+        ob_start();
+        require $this->render_php;
+        return ob_get_clean();
+    }
     public function register()
     {
-        return register_block_type(
+        register_block_type(
             $this->name,
             $this->args
         );
@@ -34,6 +41,7 @@ class CustomBlock
         $args = [];
         $args['$schema'] = "https://schemas.wp.org/trunk/block.json";
         $args['apiVersion'] = 3;
+        $args['api_version'] = 3;
         $args['selectors'] = [
             'root' => ".{$this->name}"
         ];
@@ -60,19 +68,19 @@ class CustomBlock
         if (
             $defined_asset = $this->register_js_asset("editor.js", 'admin')
         ) {
-            $args['editorScript'] = $defined_asset;
+            $args['editor_script'] = $defined_asset;
         }
 
         if (
             $defined_asset = $this->register_js_asset("view.js")
         ) {
-            $args['viewScript'] = $defined_asset;
+            $args['view_script'] = $defined_asset;
         }
 
         if (
             $defined_asset = $this->register_css_asset("editor.css", 'admin')
         ) {
-            $args['editorStyle'] = $defined_asset;
+            $args['editor_style'] = $defined_asset;
         }
 
         if (
@@ -82,11 +90,12 @@ class CustomBlock
         }
 
         if (!file_exists(
-            $render_php = $this->custom_block_file->path . "/render.php"
+            $this->render_php = $this->custom_block_file->path . "/render.php"
         )) {
-            throw new \Error("$render_php does not exist.");
+            throw new \Error("{$this->render_php} does not exist.");
         }
-        $args['render'] = "file:./" . basename($render_php);
+        $args['render'] = "file:./" . basename($this->render_php);
+        $args['render_callback'] = [$this, 'render'];
 
         return $args;
     }
@@ -138,3 +147,17 @@ class CustomBlock
         return false;
     }
 }
+
+
+
+add_filter('block_type_metadata', function ($metadata) {
+    if (str_starts_with($metadata['name'], 'test')) {
+        $template_path = wp_normalize_path(
+            realpath(
+                dirname($metadata['file']) . '/' .
+                    remove_block_asset_path_prefix($metadata['render'])
+            )
+        );
+    }
+    return $metadata;
+}, 99);

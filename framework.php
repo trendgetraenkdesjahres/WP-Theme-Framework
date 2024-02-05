@@ -1,5 +1,4 @@
 <?php
-
 define('FRAMEWORK_DIR', dirname(__FILE__));
 
 spl_autoload_register(function ($class) {
@@ -77,7 +76,11 @@ foreach ($custom_block_folders as $custom_block_folder) {
     }
     $custom_block = new CustomBlock($custom_block_folder);
     add_action('init', [$custom_block, 'register']);
-    $register_block_script .= "registerBlockType('$custom_block->name', " . json_encode($custom_block->args) . ")\n";
+
+    // not clean
+    $tmp_arr = $custom_block->args;
+    unset($tmp_arr['render_callback']);
+    $register_block_script .= "registerBlockType('$custom_block->name', " . json_encode($tmp_arr) . ")\n";
 }
 add_action(
     'enqueue_block_editor_assets',
@@ -86,7 +89,7 @@ add_action(
         wp_enqueue_script(
             "$custom_block->name",
             '',
-            ['wp', 'wp-blocks', 'wp-block-editor', 'wp-i18n'],
+            ['react', 'wp', 'wp-blocks', 'wp-block-editor', 'wp-i18n'],
             time(),
             true
         );
