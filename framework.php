@@ -1,11 +1,15 @@
 <?php
-define('FRAMEWORK_DIR', dirname(__FILE__));
+
+/**
+ * Path of WP Framework directory with trailing slash.
+ */
+define('FRAMEWORK_DIR', dirname(__FILE__) . '/');
 
 spl_autoload_register(function ($class) {
     $class_name_array = explode("\\", $class);
     if (array_shift($class_name_array) == 'WP_ThemeFramework') {
         $class_name = implode("/", $class_name_array);
-        include FRAMEWORK_DIR . "/$class_name.php";
+        include FRAMEWORK_DIR . "classes/$class_name.php";
     }
 });
 
@@ -20,7 +24,7 @@ spl_autoload_register(function ($class) {
 use WP_ThemeFramework\CustomTaxonomy\CustomTaxonomy;
 
 add_action('init', function () {
-    if (!$custom_taxonomy_files = glob(THEME_DIR . "/taxonomies/*.json")) {
+    if (!$custom_taxonomy_files = glob(THEME_DIR . "taxonomies/*.json")) {
         return;
     };
     foreach ($custom_taxonomy_files as $custom_taxonomy_file) {
@@ -44,7 +48,7 @@ add_action('init', function () {
 use WP_ThemeFramework\CustomPostType\CustomPostType;
 
 add_action('init', function () {
-    if (!$custom_postype_files = glob(THEME_DIR . "/post-types/*.json")) {
+    if (!$custom_postype_files = glob(THEME_DIR . "post-types/*.json")) {
         return;
     };
     foreach ($custom_postype_files as $custom_postype_file) {
@@ -60,43 +64,24 @@ add_action('init', function () {
 /* blocks */
 
 use WP_ThemeFramework\CustomBlock\CustomBlock;
+use WP_ThemeFramework\AssetFile\ScriptAsset;
 
-if (!$custom_block_folders = glob(THEME_DIR . "/blocks/*", GLOB_ONLYDIR)) {
+if (!$custom_block_folders = glob(THEME_DIR . "blocks/*", GLOB_ONLYDIR)) {
     return;
 };
-$register_block_script =
-    "
-    const { registerBlockType } = wp.blocks;
-    const { serverSideRender: ServerSideRender } = wp;
-    const { Fragment } = wp.element;
-    ";
 foreach ($custom_block_folders as $custom_block_folder) {
     if (!file_exists($custom_block_folder . "/block.json")) {
         return new WP_Error("No block.json found in '$custom_block_folder'.");
     }
     $custom_block = new CustomBlock($custom_block_folder);
-    add_action('init', [$custom_block, 'register']);
-
-    // not clean
-    $tmp_arr = $custom_block->args;
-    unset($tmp_arr['render_callback']);
-    $register_block_script .= "registerBlockType('$custom_block->name', " . json_encode($tmp_arr) . ")\n";
+    add_action('init', [$custom_block, 'register']);;
 }
-add_action(
-    'enqueue_block_editor_assets',
-    function () use ($custom_block, $register_block_script) {
-        wp_register_script("$custom_block->name", '');
-        wp_enqueue_script(
-            "$custom_block->name",
-            '',
-            ['react', 'wp', 'wp-blocks', 'wp-block-editor', 'wp-i18n'],
-            time(),
-            true
-        );
-        wp_add_inline_script(
-            "$custom_block->name",
-            $register_block_script,
-            'before'
-        );
-    }
+
+$custom_block_script = new ScriptAsset(
+    path: "inc/framework/assets/js/customBlocks.js",
+    action_hook: 'enqueue_block_editor_assets'
 );
+$custom_block_script
+    ->add_dependencies('react', 'wp-blocks', 'wp-block-editor', 'wp-i18n')
+    ->add_data_hook('customBlocksData')
+    ->enqueue();

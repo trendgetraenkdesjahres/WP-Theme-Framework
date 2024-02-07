@@ -2,11 +2,16 @@
 
 namespace WP_ThemeFramework\CustomBlock;
 
+use WP_ThemeFramework\AssetFile\ScriptAsset;
+use WP_ThemeFramework\AssetFile\StyleAsset;
+
 class CustomBlock
 {
     public string $theme_name;
     public string $name;
+    public string $short_name;
     public array $args;
+    public array $args_json;
     protected CustomBlockFile $custom_block_file;
     protected string $render_php;
 
@@ -15,6 +20,7 @@ class CustomBlock
         $this->theme_name = get_stylesheet();
         $this->custom_block_file = new CustomBlockFile($path);
         $this->name = $this->theme_name . "/" . $this->custom_block_file->block_name;
+        $this->short_name = $this->custom_block_file->block_name;
         $this->args = array_merge(
             $this->get_block_default_args(),
             $this->custom_block_file->block_args,
@@ -30,17 +36,40 @@ class CustomBlock
     }
     public function register()
     {
+        add_filter('customBlocksData', function ($data) {
+            $data[$this->short_name] = $this->get_js_args();
+            return $data;
+        });
         register_block_type(
             $this->name,
             $this->args
         );
     }
 
+    public function get_js_args()
+    {
+        $filtered_args = $this->args;
+        /* 'render_callback' is a this CustomBlock (-> Recursion), so it needs to drop in order for json-encoding */
+        unset(
+            $filtered_args['render_callback']
+        );
+
+        /* convert to camelCase */
+        foreach ($filtered_args as $argument => $value) {
+            unset($filtered_args[$argument]);
+            $camel_case_argument = '';
+            foreach (explode('_', $argument) as $index => $word) {
+                if ($index > 0) $word = $word = ucfirst($word);
+                $camel_case_argument .= $word;
+            }
+            $filtered_args[$camel_case_argument] = $value;
+        }
+        return $filtered_args;
+    }
     protected function get_block_default_args(): array
     {
         $args = [];
         $args['$schema'] = "https://schemas.wp.org/trunk/block.json";
-        $args['apiVersion'] = 3;
         $args['api_version'] = 3;
         $args['selectors'] = [
             'root' => ".{$this->name}"
@@ -109,22 +138,17 @@ class CustomBlock
      *
      * @return array|false
      */
-    private function register_js_asset(string $filename, string $enqueue_hook = 'wp'): array|false
+    private function register_js_asset(string $filename, string $use_in = 'wp'): array
     {
-        $script_js_handle = "{$this->name}--script";
-        if (file_exists($script_js = $this->custom_block_file->path . "/$filename")) {
-            add_action("{$enqueue_hook}_enqueue_scripts", function () use ($script_js_handle, $script_js) {
-                wp_register_script($script_js_handle, '/' . str_replace(ABSPATH, '', $script_js));
-            });
-            add_filter('wp_script_attributes', function ($attributes) use ($script_js_handle) {
-                if (isset($attributes['id']) && $attributes['id'] === "{$script_js_handle}-js") {
-                    $attributes['type'] = 'module';
-                }
-                return $attributes;
-            }, 10, 1);
-            return ["file:./" . basename($script_js), $script_js_handle];
-        }
-        return false;
+        $script_asset = new ScriptAsset(
+            path: $this->custom_block_file->path . "/$filename",
+            action_hook: 'enqueue_block_assets',
+            use_in: $use_in
+        );
+        $script_asset
+            ->register()
+            ->set_tag_attributes(['type' => 'module']);
+        return ["file:./" . basename($filename), $script_asset->handle];
     }
 
     /**
@@ -135,29 +159,15 @@ class CustomBlock
      *
      * @return array|false
      */
-    private function register_css_asset(string $filename, string $enqueue_hook = 'wp'): array|false
+    private function register_css_asset(string $filename, string $use_in = 'wp'): array|false
     {
-        $script_css_handle = "{$this->name}--style";
-        if (file_exists($script_css = $this->custom_block_file->path . "/$filename")) {
-            add_action("{$enqueue_hook}_enqueue_scripts", function () use ($script_css_handle, $script_css) {
-                wp_register_style($script_css_handle, '/' . str_replace(ABSPATH, '', $script_css));
-            });
-            return ["file:./" . basename($script_css), $script_css_handle];
-        }
-        return false;
+        $script_asset = new StyleAsset(
+            path: $this->custom_block_file->path . "/$filename",
+            action_hook: 'enqueue_block_assets',
+            use_in: $use_in
+        );
+        $script_asset
+            ->register();
+        return ["file:./" . basename($filename), $script_asset->handle];
     }
 }
-
-
-
-add_filter('block_type_metadata', function ($metadata) {
-    if (str_starts_with($metadata['name'], 'test')) {
-        $template_path = wp_normalize_path(
-            realpath(
-                dirname($metadata['file']) . '/' .
-                    remove_block_asset_path_prefix($metadata['render'])
-            )
-        );
-    }
-    return $metadata;
-}, 99);
