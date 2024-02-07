@@ -21,7 +21,7 @@ class ScriptAsset extends AssetFile implements AssetFileInterface
     public function set_tag_attributes(array $key_value_pairs): ScriptAsset
     {
         add_filter('wp_script_attributes', function ($attributes) use ($key_value_pairs) {
-            if (isset($attributes['id']) && str_starts_with($attributes['id'], "$this->handle")) {
+            if (isset($attributes['id']) && str_ends_with($attributes['id'], "js") && str_starts_with($attributes['id'], "$this->handle")) {
                 $attributes = array_merge($attributes, $key_value_pairs);
             }
             return $attributes;
