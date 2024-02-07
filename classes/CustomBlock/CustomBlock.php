@@ -34,6 +34,7 @@ class CustomBlock
         require $this->render_php;
         return ob_get_clean();
     }
+
     public function register()
     {
         add_filter('customBlocksData', function ($data) {
@@ -146,8 +147,9 @@ class CustomBlock
             use_in: $use_in
         );
         $script_asset
-            ->register()
-            ->set_tag_attributes(['type' => 'module']);
+            ->add_dependencies('custom-blocks')
+            ->set_tag_attributes(['type' => 'module'])
+            ->register();
         return ["file:./" . basename($filename), $script_asset->handle];
     }
 
