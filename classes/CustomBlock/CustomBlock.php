@@ -161,7 +161,8 @@ class CustomBlock
             use_in: $use_in
         );
         $script_asset
-            ->add_dependencies('custom-blocks')
+            ->add_dependencies('custom-blocks', 'react', 'wp-element')
+            ->set_strategy('async')
             ->set_tag_attributes(['type' => 'module'])
             ->register();
         return ["file:./" . basename($filename), $script_asset->handle];
