@@ -18,6 +18,12 @@ class ScriptAsset extends AssetFile implements AssetFileInterface
         return $this;
     }
 
+    /**
+     * Sets tag attributes for the asset.
+     *
+     * @param array $key_value_pairs Array of key-value pairs for attributes.
+     * @return ScriptAsset
+     */
     public function set_tag_attributes(array $key_value_pairs): ScriptAsset
     {
         add_filter('wp_script_attributes', function ($attributes) use ($key_value_pairs) {
@@ -26,12 +32,6 @@ class ScriptAsset extends AssetFile implements AssetFileInterface
             }
             return $attributes;
         }, 10, 1);
-        return $this;
-    }
-
-    public function add_dependencies(string ...$dependency): ScriptAsset
-    {
-        $this->dependencies = array_merge($this->dependencies, $dependency);
         return $this;
     }
 

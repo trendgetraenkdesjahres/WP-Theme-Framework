@@ -49,7 +49,7 @@ abstract class AssetFile
      * Adds dependencies to the asset.
      *
      * @param string ...$dependency Dependency names.
-     * @return AssetInterface
+     * @return AssetFile
      */
     public function add_dependencies(string ...$dependency): AssetFile
     {

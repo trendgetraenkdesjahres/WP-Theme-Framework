@@ -2,6 +2,7 @@
 
 namespace WP_ThemeFramework\CustomBlock;
 
+use WP_REST_Block_Renderer_Controller;
 use WP_ThemeFramework\AssetFile\ScriptAsset;
 use WP_ThemeFramework\AssetFile\StyleAsset;
 
@@ -41,6 +42,19 @@ class CustomBlock
             $data[$this->short_name] = $this->get_js_args();
             return $data;
         });
+
+        add_action('rest_api_init', function () {
+            register_rest_route("{$this->theme_name}/v1", "/custom_blocks/{$this->short_name}", array(
+                'methods' => 'GET',
+                'callback' => function () {
+                    return $this->get_js_args();
+                },
+                'permission_callback' => function () {
+                    return current_user_can('edit_posts');
+                }
+            ));
+        });
+
         register_block_type(
             $this->name,
             $this->args
