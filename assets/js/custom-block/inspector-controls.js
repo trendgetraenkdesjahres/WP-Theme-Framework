@@ -18,21 +18,48 @@ const {
     InspectorControls,
     InnerBlocks
 } = wp.blockEditor;
+const { Component } = wp.element;
 
 const { createElement } = React;
 
 
-/**
- * Get editor controls element to set Block-attributes
- * @export
- * @param {Object} typeAttributes of the BlockType
- * @param {Object} attributes of a custom BlockType
- * @param {function} setAttributes the block's setAttributes method
- * @return {InspectorControls} InspectorControls containing the Panel with Controls
- */
-export default function createInspectorControls(typeAttributes, attributes, setAttributes) {
 
-    function updateAttribute({ key, value }, setAttributes = false) {
+export default class ReflexiveInspectorControls extends Component {
+
+    attributes = [];
+    controls = [];
+
+    getControlComponents(attributes) {
+        for (const name in attributes) {
+            /* if is enumeration */
+            if (undefined !== attributes[name].enum && attributes[name].enum != null) {
+                this.contols.push(
+                    EnumControl(attributes[name])
+                );
+            }
+            /* if is arbitrary */
+            else {
+                this.contols.push(
+                    ArbControl(attributes[name])
+                );
+            }
+        }
+    }
+
+    getAttributes(block) {
+        let attributes = [];
+        for (const name in this.props.attributes) {
+            attributes.push(
+                Object.assign(block.attributes[name], {
+                    label: normalizeCamelCase(name),
+                    value: this.props.attributes[name]
+                })
+            );
+        }
+        return attributes;
+    }
+
+    updateAttribute({ key, value }, setAttributes = false) {
         const attributes = this.attributes
         if (typeof setAttributes != 'function') {
             attributes[key] = value;
@@ -41,14 +68,32 @@ export default function createInspectorControls(typeAttributes, attributes, setA
         }
     }
 
-    const controls = [];
+    componentDidMount() {
+        this.attributes = this.getAttributes(this.props.block);
+        console.log(this.attributes);
+    }
+
+    render() {
+        return createElement(
+            InspectorControls, null,
+            createElement(
+                PanelBody,
+                { title: 'Settings' },
+                null)
+        );
+    }
+}
+/**
+ * Get editor controls element to set Block-attributes
+ * @export
+ * @param {Object} typeAttributes of the BlockType
+ * @param {Object} attributes of a custom BlockType
+ * @param {function} setAttributes the block's setAttributes method
+ * @return {InspectorControls} InspectorControls containing the Panel with Controls
+ */
+export function createInspectorControls(typeAttributes, attributes, setAttributes) {
+
     for (const attributeName in attributes) {
-        /* set attribute up */
-        const attribute = Object.assign(typeAttributes[attributeName], {
-            name: attributeName,
-            label: attributeName.replace(/([a-z0-9])([A-Z])/g, '$1 $2'),
-            value: attributes[attributeName]
-        });
         /* if we have a fixed amount of possible values */
         if (undefined !== attribute.enum) {
             controls.push(
@@ -240,6 +285,9 @@ function createNumberControl(attribute, setAttributes) {
 }
 
 
+function normalizeCamelCase(string) {
+    return string.replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+}
 /*
 
 null

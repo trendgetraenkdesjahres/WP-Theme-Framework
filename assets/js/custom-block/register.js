@@ -4,6 +4,7 @@ const { useBlockProps } = wp.blockEditor;
 const { serverSideRender } = wp;
 import blockPrototypeEdit from './edit.js';
 import blockPrototypeSave from './save.js';
+import ReflexiveInspectorControls from './inspector-controls.js';
 
 for (const blockTypeName in customBlocksData) {
     const block = customBlocksData[blockTypeName];
@@ -11,7 +12,7 @@ for (const blockTypeName in customBlocksData) {
     const blockEdit = blockPrototypeEdit;
 
     block.edit = ({ attributes, setAttributes }) => (
-        blockEdit(block.name, attributes, setAttributes)
+        createElement(ReflexiveInspectorControls, { attributes, block })
     );
     /* block.save = () => (blockSave()); */
     registerBlockType(block.name, block);
