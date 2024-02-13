@@ -78,11 +78,12 @@ foreach ($custom_block_folders as $custom_block_folder) {
 }
 
 $custom_blocks_script = new ScriptAsset(
-    path: "assets/js/customBlocks.js",
+    path: "assets/js/register.js",
     handle: 'custom-blocks',
     action_hook: 'enqueue_block_editor_assets'
 );
 $custom_blocks_script
     ->add_dependencies('react', 'wp-blocks', 'wp-block-editor', 'wp-i18n')
+    ->set_tag_attributes(['type' => 'module'])
     ->add_data_hook('customBlocksData')
     ->enqueue();
