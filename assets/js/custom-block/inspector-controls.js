@@ -21,6 +21,7 @@ const {
 
 const { createElement } = React;
 
+
 /**
  * Get editor controls element to set Block-attributes
  * @export
@@ -30,10 +31,20 @@ const { createElement } = React;
  * @return {InspectorControls} InspectorControls containing the Panel with Controls
  */
 export default function createInspectorControls(typeAttributes, attributes, setAttributes) {
+
+    function updateAttribute({ key, value }, setAttributes = false) {
+        const attributes = this.attributes
+        if (typeof setAttributes != 'function') {
+            attributes[key] = value;
+        } else {
+            setAttributes({ key, value })
+        }
+    }
+
     const controls = [];
     for (const attributeName in attributes) {
         /* set attribute up */
-        const attribute = Object.assign(typeAttributes[attributeName],{
+        const attribute = Object.assign(typeAttributes[attributeName], {
             name: attributeName,
             label: attributeName.replace(/([a-z0-9])([A-Z])/g, '$1 $2'),
             value: attributes[attributeName]
@@ -93,8 +104,8 @@ function createStringControl(attribute, setAttributes) {
         TextControl, {
         label: attribute.label,
         value: attribute.value,
-            onChange: (newValue) => {
-                console.log({ [attribute.name]: newValue });
+        onChange: (newValue) => {
+            console.log({ [attribute.name]: newValue });
             setAttributes({ [attribute.name]: newValue })
         },
     });
@@ -107,9 +118,7 @@ function createBooleanControl(attribute, setAttributes) {
             label: attribute.label,
             value: attribute.value,
             onChange: (newValue) => {
-                const newAttribute = {};
-                newAttribute[attribute.name] = newValue;
-                setAttributes(newAttribute)
+                updateAttribute({ [attribute.name]: newValue })
             },
         });
 }
@@ -156,8 +165,7 @@ function createSelectControl(attribute, setAttributes) {
         }
         // if previous check failed and all property names combined length is not longer than 50 characters
         if (Object.keys(properties).length === 0 &&
-            options.map(option => option.label).join('').length <= 20)
-        {
+            options.map(option => option.label).join('').length <= 20) {
             properties.isAdaptiveWidth = false;
         }
         // if one of both was working out
@@ -232,7 +240,7 @@ function createNumberControl(attribute, setAttributes) {
 }
 
 
-/* 
+/*
 
 null
 boolean

@@ -78,7 +78,7 @@ foreach ($custom_block_folders as $custom_block_folder) {
 }
 
 $custom_blocks_script = new ScriptAsset(
-    path: "assets/js/register.js",
+    path: "assets/js/custom-block/register.js",
     handle: 'custom-blocks',
     action_hook: 'enqueue_block_editor_assets'
 );

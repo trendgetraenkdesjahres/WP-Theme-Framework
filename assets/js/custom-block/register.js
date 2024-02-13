@@ -2,22 +2,20 @@ const { registerBlockType } = wp.blocks;
 const { createElement } = wp.element;
 const { useBlockProps } = wp.blockEditor;
 const { serverSideRender } = wp;
-import createEditorRepresentation from './editorRepresentation.js';
-import createSaveRepresentation from './saveRepresentation.js';
+import blockPrototypeEdit from './edit.js';
+import blockPrototypeSave from './save.js';
 
 for (const blockTypeName in customBlocksData) {
-    const blockPrototype = customBlocksData[blockTypeName];
-    blockPrototype.edit = ({ attributes, setAttributes }) => {
-        return createEditorRepresentation(blockPrototype.name, attributes, setAttributes);
-    }
-    blockPrototype.save = ({ attributes, innerBlocks }) => {
-        return null;
-        return createSaveRepresentation(blockPrototype.name, attributes);
-    }
-    registerBlockType(blockPrototype.name, blockPrototype);
+    const block = customBlocksData[blockTypeName];
+
+    const blockEdit = blockPrototypeEdit;
+
+    block.edit = ({ attributes, setAttributes }) => (
+        blockEdit(block.name, attributes, setAttributes)
+    );
+    /* block.save = () => (blockSave()); */
+    registerBlockType(block.name, block);
 }
-
-
 
 /* {
     "name": "test/my-test-block",

@@ -1,5 +1,5 @@
 const { createElement } = wp.element;
-const { useBlockProps } = wp.blockEditor;
+const { useBlockProps, InnerBlocks } = wp.blockEditor;
 const { serverSideRender } = wp;
 /**
  * Get Rendered Block wrapped in Block Editor Markup
@@ -8,11 +8,6 @@ const { serverSideRender } = wp;
  * @param {Object} attributes The blocks attributes
  * @return {Element} Element representing the block
  */
-export default function createSaveRepresentation(blockTypeName, attributes) {
-    return createElement(
-        serverSideRender,
-        {
-            block: blockTypeName,
-            attributes: attributes
-        });
+export default function blockPrototypeSave(blockTypeName, attributes) {
+    return (createElement(InnerBlocks.Content, null));
 }
