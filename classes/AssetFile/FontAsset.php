@@ -46,7 +46,7 @@ class FontAsset extends AssetFile implements AssetFileInterface
         }
 
         # register dummy-stylesheet
-        add_action($this->action_hook, function () {
+        add_action($this->action_hooks, function () {
             if (false === wp_register_style($this->handle, false, $this->dependencies, $this->version)) {
                 throw new \Error('Could not register ' . $this->handle);
             }
@@ -94,9 +94,9 @@ class FontAsset extends AssetFile implements AssetFileInterface
         if (!$this->font_family_name) {
             throw new \Error("This 'font_family_name' is not defined.");
         }
-        add_action($this->action_hook, function () {
+        add_action($this->action_hooks, function () {
             if (false === wp_enqueue_style($this->handle, false, $this->dependencies, $this->version)) {
-                throw new \Error("Could not enqueue '$this->handle' with function add_action('$this->action_hook', function () {\nwp_enqueue_style('$this->handle', '$this->url', ['" . implode("', '", $this->dependencies) . "'], '$this->version', " . ($in_footer ? 'true' : 'false') . ");\n});.");
+                throw new \Error("Could not enqueue '$this->handle' with function add_action('$this->action_hooks', function () {\nwp_enqueue_style('$this->handle', '$this->url', ['" . implode("', '", $this->dependencies) . "'], '$this->version', " . ($in_footer ? 'true' : 'false') . ");\n});.");
             }
             wp_add_inline_style($this->handle, $this->get_font_face_declaration());
         });

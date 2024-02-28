@@ -90,4 +90,12 @@ class StyleAsset extends AssetFile implements AssetFileInterface
         });
         return $this;
     }
+
+    public function enqueue_in_editor(): StyleAsset
+    {
+        add_action('after_setup_theme', function () {
+            add_editor_style($this->get_relative_path());
+        });
+        return $this;
+    }
 }
