@@ -6,9 +6,14 @@ use WP_Term;
 
 class TermMeta extends Meta implements MetaInterface
 {
+    public function get_meta_type(): string
+    {
+        return 'term';
+    }
+
     /**
-     * Registers the term meta field.
-     * @param string $assign_to_object_type The type of object ('category', 'post_tag', ...).
+     * Registers the term-type's meta field.
+     * @param string $assign_to_object_type The taxonomy ('category', 'post_tag', ...).
      *
      * @return TermMeta The current instance of TermMeta.
      */
@@ -29,15 +34,43 @@ class TermMeta extends Meta implements MetaInterface
         );
 
         # add meta input to 'new' screen
-        add_action(
-            "{$assign_to_object_type}_add_form_fields",
-            $this->edit()
-        );
+        add_action("{$assign_to_object_type}_add_form_fields", $this->edit());
 
         # add save-method
-        add_action('edit_term', $this->save(), 10, 1);
-        add_action('create_term', $this->save(), 10, 1);
+        add_action('edit_term', $this->save());
+        add_action('create_term', $this->save());
         return $this;
+    }
+
+    /**
+     * Unregisters the term-type's meta field.
+     * @param string $assigned_to_object_type The taxonomy ('category', 'post_tag', ...).
+     *
+     * @return TermMeta The modified PostType instance.
+     */
+    public function unregister(string $assiged_to_object_type): TermMeta
+    {
+        # unregister meta
+        unregister_meta_key('term', $this->meta_key, $assiged_to_object_type);
+
+        # remove meta input from 'editor' screen
+        remove_action("{$assiged_to_object_type}_add_form_fields", $this->edit());
+
+        # remove save method from hooks
+        add_action('edit_term', $this->save());
+        add_action('create_term', $this->save());
+        return $this;
+    }
+
+    /**
+     * Check if the taxonomy's meta field is registered.
+     * @param string $assign_to_object_type The taxonomy ('category', 'post_tag', ...).
+     *
+     * @return bool True if the post type is registered, false otherwise.
+     */
+    public function is_registered(string $assiged_to_object_type = ''): bool
+    {
+        return registered_meta_key_exists('term', $this->meta_key, $assiged_to_object_type);
     }
 
     /**
@@ -48,10 +81,7 @@ class TermMeta extends Meta implements MetaInterface
     private function save(): callable
     {
         return function ($term_id) {
-            if (!self::is_safe_to_save($term_id, 'term')) {
-                return $term_id;
-            }
-            if (!isset($_POST[$this->input_field_nonce_name]) || !wp_verify_nonce($_POST[$this->input_field_nonce_name], $this->input_field_action_name)) {
+            if (!$this->is_saving_safe_and_secure($term_id, 'term')) {
                 return $term_id;
             }
 

@@ -49,7 +49,7 @@ add_action('init', function () {
             haystack: basename($custom_taxonomy_file),
             needle: '.example'
         )) continue;
-        $custom_taxonomy = Taxonomy::from_json($custom_taxonomy_file);
+        $custom_taxonomy = Taxonomy::create_from_json($custom_taxonomy_file);
         $custom_taxonomy->register();
     }
 }, 0);
@@ -73,7 +73,7 @@ add_action('init', function () {
             haystack: basename($custom_postype_file),
             needle: '.example'
         )) continue;
-        $custom_post_type = PostType::from_json($custom_postype_file);
+        $custom_post_type = PostType::create_from_json($custom_postype_file);
         $custom_post_type->register();
     }
 }, 0);

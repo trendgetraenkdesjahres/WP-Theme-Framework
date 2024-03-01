@@ -45,16 +45,16 @@ interface ObjectTypeInterface
  */
 abstract class ObjectType
 {
+    public function __construct(public string $name, public array $props = [])
+    {
+    }
+
     public function get_object_type(): string
     {
         return 'abstract ( :-0 ) abstract';
     }
 
-    public function __construct(public string $name, public array $props = [])
-    {
-    }
-
-    public static function from_json(string $path): ObjectTypeInterface
+    public static function create_from_json(string $path): ObjectTypeInterface
     {
         $name = basename($path, '.json');
         $class = get_called_class();

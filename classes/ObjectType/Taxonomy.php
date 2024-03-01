@@ -14,7 +14,7 @@ class Taxonomy extends ObjectType implements ObjectTypeInterface
     }
 
     /**
-     * Register a custom taxonomy with WordPress.
+     * Register this custom taxonomy with WordPress.
      *
      * @return Taxonomy The modified PostType instance.
      */
@@ -29,10 +29,9 @@ class Taxonomy extends ObjectType implements ObjectTypeInterface
     }
 
     /**
-     * Unregister the custom post type.
-     * Cannot be used to unregister built-in post types, use PostType->hide() instead.
-     *
-     * @return PostType The modified PostType instance.
+     * Unregister this taxonomy.
+     * Cannot be used to unregister built-in taxonomies, use Taxonomy->hide() instead.
+     * @return Taxonomy The modified PostType instance.
      */
     public function unregister(): Taxonomy
     {
@@ -41,12 +40,39 @@ class Taxonomy extends ObjectType implements ObjectTypeInterface
     }
 
     /**
-     * Check if the custom post type is registered.
+     * Check if this custom taxonomy is registered.
      *
      * @return bool True if the post type is registered, false otherwise.
      */
     public function is_registered(): bool
     {
         return taxonomy_exists($this->name);
+    }
+
+    /**
+     * Hide the taxonomy from the UI and search results.
+     *
+     * @return Taxonomy The modified Taxonomy instance.
+     */
+    public function hide(): Taxonomy
+    {
+        add_filter("register_taxonomy_args", function ($args, $taxonomy) {
+            if ($this->name !== $taxonomy) {
+                return $args;
+            }
+            return [
+                'public' => false,
+                'show_ui' => false,
+                'show_in_menu' => false,
+                'show_in_admin_bar' => false,
+                'show_in_nav_menus' => false,
+                'can_export' => false,
+                'has_archive' => false,
+                'exclude_from_search' => true,
+                'publicly_queryable' => false,
+                'show_in_rest' => false
+            ];
+        }, 10, 2);
+        return $this;
     }
 }

@@ -13,7 +13,7 @@ class PostType extends ObjectType implements ObjectTypeInterface
     }
 
     /**
-     * Register a custom post type with WordPress.
+     * Register this custom post type with WordPress.
      *
      * @return PostType The modified PostType instance.
      */
@@ -27,7 +27,7 @@ class PostType extends ObjectType implements ObjectTypeInterface
     }
 
     /**
-     * Unregister the custom post type.
+     * Unregister this custom post type.
      * Cannot be used to unregister built-in post types, use PostType->hide() instead.
      *
      * @return PostType The modified PostType instance.
@@ -39,7 +39,7 @@ class PostType extends ObjectType implements ObjectTypeInterface
     }
 
     /**
-     * Check if the custom post type is registered.
+     * Check if this custom post type is registered.
      *
      * @return bool True if the post type is registered, false otherwise.
      */

@@ -10,11 +10,34 @@ use DOMDocument;
 interface MetaInterface
 {
     /**
-     * Register the meta field.
+     * Registers the object-type's meta field.
+     * @param string $assign_to_object_type The type of object ('post', 'page', 'category'...).
      *
-     * @return MetaInterface The registered Meta instance.
+     * @return MetaInterface The current instance of PostMeta.
      */
     public function register(string $assign_to_object_type): MetaInterface;
+
+    /**
+     * Unregisters the object-type's meta field.
+     * @param string $assign_to_object_type The type of object ('post', 'page', 'category'...).
+     *
+     * @return ObjectTypeInterface The modified PostType instance.
+     */
+    public function unregister(string $assiged_to_object_type): MetaInterface;
+
+    /**
+     * Check if the custom object type is registered.
+     *
+     * @return bool True if the post type is registered, false otherwise.
+     */
+    public function is_registered(string $assiged_to_object_type = ''): bool;
+
+    /**
+     * Go get the thing
+     *
+     * @return string
+     */
+    public function get_meta_type(): string;
 }
 
 /**
@@ -87,6 +110,132 @@ abstract class Meta
         $this->input_field_action_name = "{$this->meta_key}_action";
 
         $this->input_field_position = str_validate($display_position, 'side', 'normal', 'advanced');
+    }
+
+    public function get_meta_type(): string
+    {
+        return 'abstract ( :-0 ) abstract';
+    }
+
+    /**
+     * Creates a number input meta field.
+     *
+     * @param string $meta_name The name of the meta field.
+     * @param string $description The description of the meta field.
+     * @param array $attributes Additional attributes for the input element.
+     * @return MetaInterface The created meta field.
+     */
+    public static function create_number(string $meta_name, string $description, string|array $assign_to_type, array $attributes = []): MetaInterface
+    {
+        $meta_class = get_called_class();
+        return new $meta_class(
+            name: $meta_name,
+            description: $description,
+            input_element_type: 'number',
+            input_element_attributes: $attributes
+        );
+    }
+
+    /**
+     * Creates a number range input meta field.
+     *
+     * @param string $meta_name The name of the meta field.
+     * @param string $description The description of the meta field.
+     * @param array $attributes Attributes for the input element. 'min' and 'max' are required.
+     * @return MetaInterface The created meta field.
+     * @throws \Error If 'min' and 'max' attributes are not provided.
+     */
+    public static function create_number_range(string $meta_name, string $description, array $attributes): MetaInterface
+    {
+        if (!isset($attributes['min']) || !isset($attributes['min'])) {
+            throw new \Error("'min' and 'max' attributes are necessary.");
+        }
+        $meta_class = get_called_class();
+        return new $meta_class(
+            name: $meta_name,
+            description: $description,
+            input_element_type: 'range',
+            input_element_attributes: $attributes
+        );
+    }
+
+    /**
+     * Creates a text input meta field.
+     *
+     * @param string $meta_name The name of the meta field.
+     * @param string $description The description of the meta field.
+     * @param array $attributes Additional attributes for the input element. 'maxlength' is recommended.
+     * @return MetaInterface The created meta field.
+     */
+    public static function create_text(string $meta_name, string $description, array $attributes = []): MetaInterface
+    {
+        $meta_class = get_called_class();
+        return new $meta_class(
+            name: $meta_name,
+            description: $description,
+            input_element_type: 'text',
+            input_element_attributes: $attributes
+        );
+    }
+
+    /**
+     * Creates a multiline text input meta field.
+     *
+     * @param string $meta_name The name of the meta field.
+     * @param string $description The description of the meta field.
+     * @param array $attributes Additional attributes for the input element. 'rows' and 'cols' are recommended.
+     * @return MetaInterface The created meta field.
+     */
+    public static function create_text_multiline(string $meta_name, string $description, array $attributes = []): MetaInterface
+    {
+        $meta_class = get_called_class();
+        return new $meta_class(
+            name: $meta_name,
+            description: $description,
+            input_element_tag_name: 'textarea',
+            input_element_attributes: $attributes
+        );
+    }
+
+    /**
+     * Creates an options meta field.
+     *
+     * @param string $meta_name The name of the meta field.
+     * @param string $description The description of the meta field.
+     * @param array $options The options for select input elements.
+     * @param array $attributes Additional attributes for the input element.
+     * @return MetaInterface The created options meta field.
+     */
+    public static function create_options(string $meta_name, string $description, array $options, array $attributes = []): MetaInterface
+    {
+        $meta_class = get_called_class();
+        return new $meta_class(
+            name: $meta_name,
+            description: $description,
+            input_element_tag_name: 'select',
+            input_element_options: $options,
+            input_element_attributes: $attributes
+        );
+    }
+
+
+    /**
+     * Creates a boolean (checkbox) meta field.
+     *
+     * @param string $meta_name The name of the meta field.
+     * @param string $description The description of the meta field.
+     * @param array $attributes Additional attributes for the checkbox input field.
+     * @return MetaInterface The created meta field instance.
+     */
+    public static function create_bool(string $meta_name, string $description, array $attributes = []): MetaInterface
+    {
+        $meta_class = get_called_class();
+        return new $meta_class(
+            name: $meta_name,
+            description: $description,
+            input_element_type: 'checkbox',
+            input_element_attributes: $attributes
+        );
     }
 
     /**
@@ -216,6 +365,22 @@ abstract class Meta
         return $dom->saveXML($fragment);
     }
 
+
+    /**
+     * Check if saving is safe and the nonce is verified.
+     *
+     * @param int $object_id    The ID of the object.
+     * @param string $object_type The type of the object.
+     * @return bool True if saving is safe and secure, false otherwise.
+     */
+    protected function is_saving_safe_and_secure(int $object_id, string $object_type)
+    {
+        if (!self::is_safe_to_save($object_id, 'post')) {
+            return false;
+        }
+        return $this->is_nonce_verified();
+    }
+
     /**
      * Validate if it's safe to save the meta field.
      *
@@ -223,7 +388,7 @@ abstract class Meta
      * @param string $class The class of the object.
      * @return bool True if it's safe to save, false otherwise.
      */
-    protected static function is_safe_to_save(int $object_id, string $object_type): bool
+    private static function is_safe_to_save(int $object_id, string $object_type): bool
     {
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
             return false;
@@ -237,5 +402,21 @@ abstract class Meta
             return false;
         }
         return true;
+    }
+
+    /**
+     * Checks if the nonce is verified.
+     *
+     * @return bool Whether the nonce is verified.
+     */
+    private function is_nonce_verified()
+    {
+        if (!isset($_POST[$this->input_field_nonce_name])) {
+            return false;
+        }
+        if (wp_verify_nonce($_POST[$this->input_field_nonce_name], $this->input_field_action_name)) {
+            return true;
+        }
+        return false;
     }
 }
