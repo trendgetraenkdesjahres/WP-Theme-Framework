@@ -2,16 +2,13 @@
 
 namespace WP_ThemeFramework\ObjectType;
 
-use WP_ThemeFramework\MetaField\PostMeta;
+use WP_ThemeFramework\Meta\PostMeta;
 
 /**
  * Handles a (custom) post type in WordPress.
  */
-class PostType
+class PostType extends ObjectType implements ObjectTypeInterface
 {
-    public function __construct(public string $name, public array $props = [])
-    {
-    }
 
     /**
      * Register the custom post type with WordPress.
@@ -30,7 +27,7 @@ class PostType
     /**
      * Register custom meta fields for this post type.
      *
-     * @param PostMeta $meta Optional. The meta field object to register.
+     * @param PostMeta $meta The meta field object to register.
      * @return PostType The modified PostType instance.
      */
     public function register_meta(PostMeta $meta): PostType

@@ -1,13 +1,13 @@
 <?php
 
-namespace WP_ThemeFramework\MetaField;
+namespace WP_ThemeFramework\Meta;
 
 /**
  * Class PostMeta
  *
  * Represents a post meta field in WordPress.
  */
-class PostMeta extends MetaField implements MetaFieldInterface
+class PostMeta extends Meta implements MetaInterface
 {
     /**
      * Registers the post meta field.

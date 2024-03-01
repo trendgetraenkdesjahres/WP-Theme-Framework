@@ -4,8 +4,6 @@
  * Path of WP Framework directory with trailing slash.
  */
 
-use WP_ThemeFramework\Utils\Validation;
-
 define('FRAMEWORK_DIR', dirname(__FILE__) . '/');
 
 spl_autoload_register(function ($class) {
@@ -19,6 +17,8 @@ spl_autoload_register(function ($class) {
 /**
  * Util Functions
  */
+
+use WP_ThemeFramework\Utils\Validation;
 
 function str_validate(string $needle, string ...$haystack)
 {

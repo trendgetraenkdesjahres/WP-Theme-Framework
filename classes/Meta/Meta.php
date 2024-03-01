@@ -1,26 +1,26 @@
 <?php
 
-namespace WP_ThemeFramework\MetaField;
+namespace WP_ThemeFramework\Meta;
 
 use DOMDocument;
 
 /**
  * Interface for custom meta fields in WordPress.
  */
-interface MetaFieldInterface
+interface MetaInterface
 {
     /**
      * Register the meta field.
      *
-     * @return MetaFieldInterface The registered MetaField instance.
+     * @return MetaInterface The registered Meta instance.
      */
-    public function register(string $assign_to_object_type): MetaFieldInterface;
+    public function register(string $assign_to_object_type): MetaInterface;
 }
 
 /**
  * Abstract class for creating custom meta fields in WordPress.
  */
-abstract class MetaField
+abstract class Meta
 {
     /**
      * The unique key for the meta field.
@@ -60,7 +60,7 @@ abstract class MetaField
     protected array $options = [];
 
     /**
-     * Create a new MetaField instance.
+     * Create a new Meta instance.
      *
      * @param string $name The name of the meta field.
      * @param string|null $description Optional. The description of the meta field to display.
@@ -94,7 +94,7 @@ abstract class MetaField
      * 'object_subtype', 'type', 'string', 'description' are set by the class.
      * @link https://developer.wordpress.org/reference/functions/register_meta/#parameters
      */
-    public function set_option(string $option, $value): MetaField
+    public function set_option(string $option, $value): Meta
     {
         str_validate($option, 'default', 'single', 'sanitize_callback', 'auth_callback', 'show_in_rest', 'revisions_enabled');
         $this->options[$option] = $value;

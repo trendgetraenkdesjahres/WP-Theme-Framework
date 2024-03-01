@@ -1,10 +1,10 @@
 <?php
 
-namespace WP_ThemeFramework\MetaField;
+namespace WP_ThemeFramework\Meta;
 
 use WP_Term;
 
-class TermMeta extends MetaField implements MetaFieldInterface
+class TermMeta extends Meta implements MetaInterface
 {
     /**
      * Registers the term meta field.
