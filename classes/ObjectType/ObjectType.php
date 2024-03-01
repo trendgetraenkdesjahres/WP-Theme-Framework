@@ -2,7 +2,8 @@
 
 namespace WP_ThemeFramework\ObjectType;
 
-use WP_ThemeFramework\Meta\Meta;
+use WP_ThemeFramework\Meta\MetaInterface;
+use WP_ThemeFramework\Utils\JsonFile;
 
 /**
  * Interface for object type (post, term, user, comment, ...) fields in WordPress.
@@ -10,37 +11,66 @@ use WP_ThemeFramework\Meta\Meta;
 interface ObjectTypeInterface
 {
     /**
-     * Register the object type (post-type, term-taxonomy, user, comment, ...).
+     * Register a custom object type with WordPress.
      *
-     * @return ObjectTypeInterface The registered ObjectType instance.
+     * @return ObjectTypeInterface The modified PostType instance.
      */
     public function register(): ObjectTypeInterface;
 
     /**
-     * Unregister the object type (post, term, user, comment, ...).
+     * Unregister the custom object type.
      * Cannot be used to unregister built-in post types, use PostType->hide() instead.
      *
      * @return ObjectTypeInterface The modified PostType instance.
      */
     public function unregister(): ObjectTypeInterface;
+
+    /**
+     * Check if the custom object type is registered.
+     *
+     * @return bool True if the post type is registered, false otherwise.
+     */
+    public function is_registered(): bool;
+
+    /**
+     * Go get the thing
+     *
+     * @return string
+     */
+    public function get_object_type(): string;
 }
 
 /**
- * Handles a object type (post, term, user, comment, ...) in WordPress.
+ * Handles a object type ('page' of posttype, 'categorie' of termtype/taxonomy, ...) in WordPress.
  */
 abstract class ObjectType
 {
+    public function get_object_type(): string
+    {
+        return 'abstract ( :-0 ) abstract';
+    }
+
     public function __construct(public string $name, public array $props = [])
     {
     }
 
+    public static function from_json(string $path): ObjectTypeInterface
+    {
+        $name = basename($path, '.json');
+        $class = get_called_class();
+        return new $class(
+            name: $name,
+            props: JsonFile::to_array($path)
+        );
+    }
+
     /**
-     * Register custom meta fields for this post type.
+     * Register custom meta fields for this object type.
      *
-     * @param PostMeta $meta Optional. The meta field object to register.
-     * @return PostType The modified PostType instance.
+     * @param MetaInterface $meta The WP_Framework Meta object to register.
+     * @return ObjectType The modified ObjectType instance.
      */
-    public function register_meta(Meta $meta): ObjectType
+    public function register_meta(MetaInterface $meta): ObjectType
     {
         $meta->register($this->name);
         return $this;
@@ -49,26 +79,17 @@ abstract class ObjectType
     /**
      * Unregister custom meta fields for this post type.
      *
-     * @param PostMeta $meta Optional. The meta field object to register.
-     * @return PostType The modified PostType instance.
+     * @param string|MetaInterface $meta The WP_Framework Meta object or a string (builtin Meta) to unregister.
+     * @return ObjectType The modified ObjectType instance.
      */
-    public function unregister_meta(string|Meta $meta): PostType
+    public function unregister_meta(string|MetaInterface $meta): ObjectType
     {
         if (is_string($meta)) {
-            unregister_meta_key('post', $meta_key, $post_type);
+            unregister_meta_key($this->get_object_type(), $meta, $this->name);
             return $this;
         }
-        $meta->unregister();
+        # TODO not implemented yet
+        /* $meta->unregister(); */
         return $this;
-    }
-
-    /**
-     * Check if the custom post type is registered.
-     *
-     * @return bool True if the post type is registered, false otherwise.
-     */
-    public function is_registered(): bool
-    {
-        return post_type_exists($this->name);
     }
 }

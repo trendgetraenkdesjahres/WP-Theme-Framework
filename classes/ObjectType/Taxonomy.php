@@ -1,23 +1,52 @@
 <?php
 
-namespace WP_ThemeFramework\CustomTaxonomy;
+namespace WP_ThemeFramework\ObjectType;
 
-# taxonomy aka 'termtype'
-class Taxonomy
+
+/**
+ * Handles a (custom) taxonomy (aka a type of term) in WordPress.
+ */
+class Taxonomy extends ObjectType implements ObjectTypeInterface
 {
-    public CustomTaxonomyFile $taxonomy_file;
-
-    public function __construct(string $path)
+    public function get_object_type(): string
     {
-        $this->taxonomy_file = new CustomTaxonomyFile($path);
+        return 'term';
     }
 
-    public function register()
+    /**
+     * Register a custom taxonomy with WordPress.
+     *
+     * @return Taxonomy The modified PostType instance.
+     */
+    public function register(): Taxonomy
     {
-        return register_taxonomy(
-            taxonomy: $this->taxonomy_file->taxonomy_name,
-            object_type: $this->taxonomy_file->taxonomy_object,
-            args: $this->taxonomy_file->taxonomy_args
+        register_taxonomy(
+            taxonomy: $this->name,
+            object_type: $this->props['object_type'],
+            args: $this->props
         );
+        return $this;
+    }
+
+    /**
+     * Unregister the custom post type.
+     * Cannot be used to unregister built-in post types, use PostType->hide() instead.
+     *
+     * @return PostType The modified PostType instance.
+     */
+    public function unregister(): Taxonomy
+    {
+        unregister_taxonomy($this->name);
+        return $this;
+    }
+
+    /**
+     * Check if the custom post type is registered.
+     *
+     * @return bool True if the post type is registered, false otherwise.
+     */
+    public function is_registered(): bool
+    {
+        return taxonomy_exists($this->name);
     }
 }

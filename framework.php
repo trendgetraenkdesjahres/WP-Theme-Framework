@@ -38,7 +38,7 @@ function str_validate(string $needle, string ...$haystack)
  * @link https://developer.wordpress.org/reference/functions/register_taxonomy/
  * */
 
-use WP_ThemeFramework\CustomTaxonomy\CustomTaxonomy;
+use WP_ThemeFramework\ObjectType\Taxonomy;
 
 add_action('init', function () {
     if (!$custom_taxonomy_files = glob(THEME_DIR . "taxonomies/*.json")) {
@@ -49,7 +49,7 @@ add_action('init', function () {
             haystack: basename($custom_taxonomy_file),
             needle: '.example'
         )) continue;
-        $custom_taxonomy = new CustomTaxonomy($custom_taxonomy_file);
+        $custom_taxonomy = Taxonomy::from_json($custom_taxonomy_file);
         $custom_taxonomy->register();
     }
 }, 0);
@@ -62,7 +62,6 @@ add_action('init', function () {
  * @link https://developer.wordpress.org/plugins/post-types/registering-custom-post-types/
  * */
 
-use WP_ThemeFramework\CustomPostType\CustomPostTypeFile;
 use WP_ThemeFramework\ObjectType\PostType;
 
 add_action('init', function () {
@@ -74,11 +73,7 @@ add_action('init', function () {
             haystack: basename($custom_postype_file),
             needle: '.example'
         )) continue;
-        $file_handle = new CustomPostTypeFile($custom_postype_file);
-        $custom_post_type = new PostType(
-            name: $file_handle->posttype_name,
-            props: $file_handle->posttype_args
-        );
+        $custom_post_type = PostType::from_json($custom_postype_file);
         $custom_post_type->register();
     }
 }, 0);

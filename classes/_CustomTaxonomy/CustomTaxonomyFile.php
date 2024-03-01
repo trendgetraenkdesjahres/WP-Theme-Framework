@@ -35,7 +35,7 @@ class CustomTaxonomyFile extends JsonFile
             return new \WP_Error('taxonomy_length_invalid', __('Taxonomy names must be between 1 and 32 characters in length.'));
         }
         $this->taxonomy_name = basename($path, '.json');
-        $this->taxonomy_args = self::json_file_to_array($path);
+        $this->taxonomy_args = self::to_array($path);
         $this->taxonomy_object = $this->taxonomy_args['object_type'];
     }
 

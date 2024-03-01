@@ -11,7 +11,7 @@ class JsonFile
      *
      * @return array
      */
-    protected static function json_file_to_array($path): array
+    public static function to_array($path): array
     {
         $file_handle = fopen($path, 'r');
         try {

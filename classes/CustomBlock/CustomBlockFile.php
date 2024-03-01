@@ -22,6 +22,6 @@ class CustomBlockFile extends JsonFile
     function __construct(public string $path)
     {
         $this->block_name = str_replace(" ", "-", basename($path));
-        $this->block_args = self::json_file_to_array($path . "/block.json");
+        $this->block_args = self::to_array($path . "/block.json");
     }
 }

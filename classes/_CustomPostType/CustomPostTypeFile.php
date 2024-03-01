@@ -34,7 +34,7 @@ class CustomPostTypeFile extends JsonFile
             return new \WP_Error('posttype_length_invalid', __('PostType names must be between 1 and 20 characters in length.'));
         }
         $this->posttype_name = basename($path, '.json');
-        $this->posttype_args = self::json_file_to_array($path);
+        $this->posttype_args = self::to_array($path);
     }
 
     /**
