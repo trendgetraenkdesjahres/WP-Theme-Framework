@@ -29,7 +29,7 @@ class FontAsset extends AssetFile implements AssetFileInterface
     protected ?string $unicode_subset = null;
 
     protected array $styles = [
-        "normal" => [400]
+        "regular" => [400]
     ];
 
     /**
@@ -51,7 +51,6 @@ class FontAsset extends AssetFile implements AssetFileInterface
                 throw new \Error('Could not register ' . $this->handle);
             }
         });
-
 
         # add to theme.json data
         add_filter('wp_theme_json_data_theme', function ($theme_json) {
@@ -132,7 +131,7 @@ class FontAsset extends AssetFile implements AssetFileInterface
     /**
      * Set the name and properties of the font asset, including font family, fallback family, and type family name.
      *
-     * @param string|null $font_family_name The primary font family name.
+     * @param string|null $font_family_name The primary font family name. For OpenType and TrueType fonts, <font-face-name> is used to match either the Postscript name or the full font name in the name table of locally available fonts.
      * @param string|null $font_fallback_family The fallback font family name, including a generic family.
      * @param string|null $font_type_family_name The type family name for generating the slug and dynamic property name.
      *
@@ -180,26 +179,26 @@ class FontAsset extends AssetFile implements AssetFileInterface
     }
 
     /**
-     * Set the font styles, including normal and italic font weights, for the FontAsset.
+     * Set the font styles, including regular and italic font weights, for the FontAsset.
      *
-     * @param array|null $normal_font_weights An array of normal font weights.
+     * @param array|null $regular_font_weights An array of regular font weights.
      * @param array|null $italic_font_weights An array of italic font weights.
      *
      * @return FontAsset The modified FontAsset instance.
      *
      * @throws \Error If any font weight is not divisible by 100 or falls outside the range of 0 to 1000.
      */
-    public function set_styles(?array $normal_font_weights = null, ?array $italic_font_weights = null): FontAsset
+    public function set_styles(?array $regular_font_weights = null, ?array $italic_font_weights = null): FontAsset
     {
-        if ($normal_font_weights) {
-            array_reduce($normal_font_weights, function ($carry, $item) {
+        if ($regular_font_weights) {
+            array_reduce($regular_font_weights, function ($carry, $item) {
                 $divisible = $carry && ($item % 100 === 0);
                 if (!$divisible || ($item < 0 || $item > 1000)) {
                     throw new \Error("'$item' is not a font-weight.");
                 }
                 return $divisible;
             }, true);
-            $this->styles['normal'] = $normal_font_weights;
+            $this->styles['regular'] = $regular_font_weights;
         }
 
         if ($italic_font_weights) {
@@ -311,14 +310,14 @@ class FontAsset extends AssetFile implements AssetFileInterface
 
         if (count($this->styles) > 1 || isset($this->styles['italic'])) {
             foreach ($this->styles as $style => $weights) {
-                if ($style == 'normal') $i = 1;
+                if ($style == 'regular') $i = 1;
                 if ($style == 'italic') $i = 0;
                 foreach ($weights as $weight) {
                     $query .= "$i,$weight;";
                 }
             }
         } else {
-            foreach ($this->styles['normal'] as $weight) {
+            foreach ($this->styles['regular'] as $weight) {
                 $query .= "$weight;";
             }
         }
@@ -336,24 +335,53 @@ class FontAsset extends AssetFile implements AssetFileInterface
      */
     public function get_font_face_declaration(): string
     {
-        $declaration = "font-familiy: \"$this->font_family_name\"" . ($this->font_fallback_family ? ", $this->font_fallback_family" : '') . "; ";
-        $declaration .= "src: local(\"$this->font_family_name\")";
-        if ($this->remote_url) {
-            $declaration .= ", url(\"$this->remote_url\") format(\"woff2\")";
-        }
-        $declaration .= ", url(\"" . get_theme_file_uri(str_replace(THEME_DIR, '', $this->absolute_path)) . "\") format(\"" . pathinfo($this->absolute_path, PATHINFO_EXTENSION) . "\")";
-        $declaration .= "; ";
+        $declaration = "  font-family: '$this->font_family_name'" . ($this->font_fallback_family ? ", $this->font_fallback_family" : '') . ";\n";
         if ($this->unicode_range) {
-            $declaration .= "unicode-range: $this->unicode_range; ";
+            $declaration .= "  unicode-range: $this->unicode_range;\n";
         }
-        $declaration .= "font-display: $this->strategy; ";
-        $declaration .= "font-weight: " . implode(' ', $this->styles['normal']) . "; ";
-        return "@font-face { $declaration }";
+        $declaration .= "  font-display: $this->strategy;\n";
+        $declaration .= "  font-weight: " . implode(' ', $this->styles['regular']) . ";\n";
+        $declaration .= "  src:\n    local(\"$this->font_family_name\"),\n";
+        if ($this->remote_url) {
+            $declaration .= "    url($this->remote_url) format('" . $this->get_font_format($this->remote_url) . "'),\n";
+        }
+        $declaration .= "    url(" . get_theme_file_uri(str_replace(THEME_DIR, '', $this->absolute_path)) . ") format('" . $this->get_font_format() . "');\n";
+        return "@font-face {\n$declaration}";
     }
 
     public function get_font_var_declaration(string $selector = ":root"): string
     {
         $declaration = "--font-family-{$this->font_type_slug}: \"{$this->font_family_name}\", {$this->font_fallback_family};";
         return "$selector { $declaration }";
+    }
+
+    /**
+     * Method get_font_format
+     * if url is given, it will check it's suffix instead of this file's one.
+     *
+     * @link https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/src#font_formats
+     *
+     * @return string
+     */
+    private function get_font_format(string $url = ''): string
+    {
+        $formats = [
+            'otc' => 'collection',
+            'ttc' => 'collection',
+            'eot' => 'embedded-opentype',
+            'otf' => 'opentype',
+            'ttf' => 'opentype',
+            'svg' => 'svg',
+            'svgz' => 'svg',
+            'ttf' => 'truetype',
+            'woff' => 'woff',
+            'woff2' => 'woff2'
+        ];
+        $check_me = $url ? $url : $this->absolute_path;
+        $suffix = pathinfo($check_me, PATHINFO_EXTENSION);
+        if (key_exists($suffix,            $formats)) {
+            return $formats[$suffix];
+        }
+        throw new \Error(".$suffix is not an extension of a valid font format");
     }
 }
