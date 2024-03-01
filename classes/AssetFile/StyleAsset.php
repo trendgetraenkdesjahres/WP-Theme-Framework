@@ -55,11 +55,12 @@ class StyleAsset extends AssetFile implements AssetFileInterface
      *
      * This method associates a FontAsset with the StyleAsset by setting the FontAsset's handle and registering it.
      * It ensures that the font styles are included and enqueued along with the style asset.
+     # TODO accepts string, too, and crafts it's own font
 
      * @param FontAsset $font The FontAsset instance to add.
      * @return StyleAsset The modified StyleAsset instance.
      */
-    public function add_font(FontAsset $font): StyleAsset
+    public function add_font(string|FontAsset $font): StyleAsset
     {
         $font->handle = $this->handle;
         $this->add_inline($font->get_font_face_declaration());

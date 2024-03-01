@@ -3,6 +3,9 @@
 /**
  * Path of WP Framework directory with trailing slash.
  */
+
+use WP_ThemeFramework\Utils\Validation;
+
 define('FRAMEWORK_DIR', dirname(__FILE__) . '/');
 
 spl_autoload_register(function ($class) {
@@ -12,6 +15,20 @@ spl_autoload_register(function ($class) {
         include FRAMEWORK_DIR . "classes/$class_name.php";
     }
 });
+
+/**
+ * Util Functions
+ */
+
+function str_validate(string $needle, string ...$haystack)
+{
+    try {
+        (new Validation(...$haystack))->test($needle);
+    } catch (\Error $error) {
+        throw new \Error($error->getMessage());
+    }
+    return $needle;
+}
 
 /**
  * Custom Taxonomies
@@ -45,7 +62,8 @@ add_action('init', function () {
  * @link https://developer.wordpress.org/plugins/post-types/registering-custom-post-types/
  * */
 
-use WP_ThemeFramework\CustomPostType\CustomPostType;
+use WP_ThemeFramework\CustomPostType\CustomPostTypeFile;
+use WP_ThemeFramework\ObjectType\PostType;
 
 add_action('init', function () {
     if (!$custom_postype_files = glob(THEME_DIR . "post-types/*.json")) {
@@ -56,8 +74,12 @@ add_action('init', function () {
             haystack: basename($custom_postype_file),
             needle: '.example'
         )) continue;
-        $custom_taxonomie = new CustomPostType($custom_postype_file);
-        $custom_taxonomie->register();
+        $file_handle = new CustomPostTypeFile($custom_postype_file);
+        $custom_post_type = new PostType(
+            name: $file_handle->posttype_name,
+            props: $file_handle->posttype_args
+        );
+        $custom_post_type->register();
     }
 }, 0);
 
