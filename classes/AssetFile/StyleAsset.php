@@ -1,8 +1,8 @@
 <?php
 
-namespace WP_ThemeFramework\AssetFile;
+namespace WP_Framework\AssetFile;
 
-use WP_ThemeFramework\StyleFont\StyleFont;
+use WP_Framework\StyleFont\StyleFont;
 
 /**
  * StyleAsset

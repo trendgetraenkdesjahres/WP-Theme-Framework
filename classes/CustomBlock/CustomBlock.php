@@ -1,10 +1,10 @@
 <?php
 
-namespace WP_ThemeFramework\CustomBlock;
+namespace WP_Framework\CustomBlock;
 
 use WP_REST_Block_Renderer_Controller;
-use WP_ThemeFramework\AssetFile\ScriptAsset;
-use WP_ThemeFramework\AssetFile\StyleAsset;
+use WP_Framework\AssetFile\ScriptAsset;
+use WP_Framework\AssetFile\StyleAsset;
 
 class CustomBlock
 {

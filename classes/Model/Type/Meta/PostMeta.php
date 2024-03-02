@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_ThemeFramework\Meta;
+namespace WP_Framework\Model\Type\Meta;
 
 /**
  * Class PostMeta

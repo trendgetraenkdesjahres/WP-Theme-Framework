@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_ThemeFramework\AssetFile;
+namespace WP_Framework\AssetFile;
 
 class ScriptAsset extends AssetFile implements AssetFileInterface
 {

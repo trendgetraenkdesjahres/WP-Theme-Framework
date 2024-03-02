@@ -1,8 +1,8 @@
 <?php
 
-namespace WP_ThemeFramework\CustomBlock;
+namespace WP_Framework\CustomBlock;
 
-use WP_ThemeFramework\Utils\JsonFile;
+use WP_Framework\Utils\JsonFile;
 
 /**
  * CustomBlockFile

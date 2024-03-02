@@ -3,22 +3,27 @@
 /**
  * Path of WP Framework directory with trailing slash.
  */
-
 define('FRAMEWORK_DIR', dirname(__FILE__) . '/');
 
-spl_autoload_register(function ($class) {
-    $class_name_array = explode("\\", $class);
-    if (array_shift($class_name_array) == 'WP_ThemeFramework') {
-        $class_name = implode("/", $class_name_array);
-        include FRAMEWORK_DIR . "classes/$class_name.php";
-    }
-});
+# require main class
+require 'classes/Framework.php';
+
+# get instance
+use WP_Framework\Framework;
+
+$framework = Framework::get_instance();
+
+
+/**
+ * TO BE MOVED INTO Framework-methods
+ */
+
 
 /**
  * Util Functions
  */
 
-use WP_ThemeFramework\Utils\Validation;
+use WP_Framework\Utils\Validation;
 
 function str_validate(string $needle, string ...$haystack)
 {
@@ -38,21 +43,7 @@ function str_validate(string $needle, string ...$haystack)
  * @link https://developer.wordpress.org/reference/functions/register_taxonomy/
  * */
 
-use WP_ThemeFramework\ObjectType\Taxonomy;
-
-add_action('init', function () {
-    if (!$custom_taxonomy_files = glob(THEME_DIR . "taxonomies/*.json")) {
-        return;
-    };
-    foreach ($custom_taxonomy_files as $custom_taxonomy_file) {
-        if (str_starts_with(
-            haystack: basename($custom_taxonomy_file),
-            needle: '.example'
-        )) continue;
-        $custom_taxonomy = Taxonomy::create_from_json($custom_taxonomy_file);
-        $custom_taxonomy->register();
-    }
-}, 0);
+$framework->register_object_types_from_json_in_folder('Taxonomy', 'taxonomies');
 
 /**
  * Custom Post Types
@@ -61,27 +52,14 @@ add_action('init', function () {
  * the slug for the post type goes by it's file name
  * @link https://developer.wordpress.org/plugins/post-types/registering-custom-post-types/
  * */
-
-use WP_ThemeFramework\ObjectType\PostType;
-
-add_action('init', function () {
-    if (!$custom_postype_files = glob(THEME_DIR . "post-types/*.json")) {
-        return;
-    };
-    foreach ($custom_postype_files as $custom_postype_file) {
-        if (str_starts_with(
-            haystack: basename($custom_postype_file),
-            needle: '.example'
-        )) continue;
-        $custom_post_type = PostType::create_from_json($custom_postype_file);
-        $custom_post_type->register();
-    }
-}, 0);
+/*
+$framework->get_model('post')->register_type_from_json_folder('post-types'); */
+$framework->register_object_types_from_json_in_folder('PostType', 'post-types');
 
 /* blocks */
 
-use WP_ThemeFramework\CustomBlock\CustomBlock;
-use WP_ThemeFramework\AssetFile\ScriptAsset;
+use WP_Framework\CustomBlock\CustomBlock;
+use WP_Framework\AssetFile\ScriptAsset;
 
 if (!$custom_block_folders = glob(THEME_DIR . "blocks/*", GLOB_ONLYDIR)) {
     return;

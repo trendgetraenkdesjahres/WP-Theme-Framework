@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_ThemeFramework\AssetFile;
+namespace WP_Framework\AssetFile;
 
 abstract class AssetFile
 {

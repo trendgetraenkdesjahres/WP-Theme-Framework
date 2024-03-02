@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_ThemeFramework\Utils;
+namespace WP_Framework\Utils;
 
 class Validation
 {

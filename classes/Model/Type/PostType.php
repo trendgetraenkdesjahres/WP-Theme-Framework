@@ -1,11 +1,11 @@
 <?php
 
-namespace WP_ThemeFramework\ObjectType;
+namespace WP_Framework\Model\Type;
 
 /**
  * Handles a (custom) post type in WordPress.
  */
-class PostType extends ObjectType implements ObjectTypeInterface
+class PostType extends AbstractType implements TypeInterface
 {
     public function get_object_type(): string
     {
@@ -19,10 +19,12 @@ class PostType extends ObjectType implements ObjectTypeInterface
      */
     public function register(): PostType
     {
-        register_post_type(
-            post_type: $this->name,
-            args: $this->props
-        );
+        add_action($this->registration_tag, function () {
+            register_post_type(
+                post_type: $this->name,
+                args: $this->props
+            );
+        });
         return $this;
     }
 
@@ -34,7 +36,9 @@ class PostType extends ObjectType implements ObjectTypeInterface
      */
     public function unregister(): PostType
     {
-        unregister_post_type($this->name);
+        add_action($this->registration_tag, function () {
+            unregister_post_type($this->name);
+        });
         return $this;
     }
 
