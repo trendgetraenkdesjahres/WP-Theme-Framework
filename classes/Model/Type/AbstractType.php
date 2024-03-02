@@ -13,7 +13,7 @@ interface TypeInterface
     /**
      * Register a custom object type with WordPress.
      *
-     * @return TypeInterface The modified PostType instance.
+     * @return TypeInterface The modified Type instance.
      */
     public function register(): TypeInterface;
 
@@ -33,13 +33,6 @@ interface TypeInterface
     public function is_registered(): bool;
 
     /**
-     * Go get the thing
-     *
-     * @return string
-     */
-    public function get_object_type(): string;
-
-    /**
      * Create instance from json data
      *
      * @return TypeInterface The Instace.
@@ -52,6 +45,7 @@ interface TypeInterface
  */
 abstract class AbstractType
 {
+    protected string $model_name = 'abstract ( :-0 ) abstract';
     /**
      * Tag which is used for the hook in the "add_action" function to register this Type.
      */
@@ -59,11 +53,6 @@ abstract class AbstractType
 
     public function __construct(public string $name, public array $props = [])
     {
-    }
-
-    public function get_object_type(): string
-    {
-        return 'abstract ( :-0 ) abstract';
     }
 
     public static function create_from_json(string $path): TypeInterface
@@ -97,11 +86,10 @@ abstract class AbstractType
     public function unregister_meta(string|MetaInterface $meta): AbstractType
     {
         if (is_string($meta)) {
-            unregister_meta_key($this->get_object_type(), $meta, $this->name);
+            unregister_meta_key($this->model_name, $meta, $this->name);
             return $this;
         }
-        # TODO not implemented yet
-        /* $meta->unregister(); */
+        $meta->unregister($this->model_name);
         return $this;
     }
 }

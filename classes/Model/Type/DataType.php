@@ -7,11 +7,7 @@ namespace WP_Framework\Model\Type;
  */
 class DataType extends AbstractType
 {
-
-    public function get_object_type(): string
-    {
-        return 'name vom DataObject';
-    }
+    protected string $model_name = 'data';
 
     /**
      * Register this type of a custom DataObject with WordPress.

@@ -7,7 +7,7 @@ namespace WP_Framework\Model\Type\Meta;
  *
  * Represents a post meta field in WordPress.
  */
-class PostMeta extends Meta implements MetaInterface
+class PostMeta extends AbstractMeta implements MetaInterface
 {
     public function get_meta_type(): string
     {

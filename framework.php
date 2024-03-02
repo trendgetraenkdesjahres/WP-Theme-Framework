@@ -10,12 +10,13 @@ require 'classes/Framework.php';
 
 # get instance
 use WP_Framework\Framework;
+use WP_Framework\Model\Type\Meta\PostMeta;
 
 $framework = Framework::get_instance();
 
 
 /**
- * TO BE MOVED INTO Framework-methods
+ * ALL BELOWL: TO BE MOVED INTO Framework-methods
  */
 
 
@@ -43,7 +44,9 @@ function str_validate(string $needle, string ...$haystack)
  * @link https://developer.wordpress.org/reference/functions/register_taxonomy/
  * */
 
-$framework->register_object_types_from_json_in_folder('Taxonomy', 'taxonomies');
+$framework
+    ->get_model('TermModel')
+    ->register_types_from_folder();
 
 /**
  * Custom Post Types
@@ -52,9 +55,13 @@ $framework->register_object_types_from_json_in_folder('Taxonomy', 'taxonomies');
  * the slug for the post type goes by it's file name
  * @link https://developer.wordpress.org/plugins/post-types/registering-custom-post-types/
  * */
-/*
-$framework->get_model('post')->register_type_from_json_folder('post-types'); */
-$framework->register_object_types_from_json_in_folder('PostType', 'post-types');
+
+$framework
+    ->get_model('PostModel')
+    ->register_types_from_folder();
+
+
+$framework->get_model('PostModel')->get_type('project')->register_meta(PostMeta::create_text('Text Feld', 'zum testen'));
 
 /* blocks */
 

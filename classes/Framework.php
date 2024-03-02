@@ -2,9 +2,7 @@
 
 namespace WP_Framework;
 
-use WP_Framework\Model\AbstractObject;
-use WP_Framework\Model\DataObject;
-use WP_Framework\Model\ObjectInterface;
+use WP_Framework\Model\AbstractModel;
 
 class Framework
 {
@@ -43,9 +41,9 @@ class Framework
      *
      * @param string $object_type_name [explicite description]
      *
-     * @return ObjectInterface
+     * @return AbstractModel
      */
-    public function get_model(string $object_name): ObjectInterface
+    public function get_model(string $object_name): AbstractModel
     {
         # check the Object string, if it's actually a Object class.
         $object_name = "WP_Framework\Model\\" . $object_name;

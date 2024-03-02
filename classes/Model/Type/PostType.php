@@ -7,10 +7,7 @@ namespace WP_Framework\Model\Type;
  */
 class PostType extends AbstractType implements TypeInterface
 {
-    public function get_object_type(): string
-    {
-        return 'post';
-    }
+    protected string $model_name = 'post';
 
     /**
      * Register this custom post type with WordPress.

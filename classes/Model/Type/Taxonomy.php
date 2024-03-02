@@ -8,10 +8,7 @@ namespace WP_Framework\Model\Type;
  */
 class Taxonomy extends AbstractType implements TypeInterface
 {
-    public function get_object_type(): string
-    {
-        return 'term';
-    }
+    protected string $model_name = 'term';
 
     /**
      * Register this custom taxonomy with WordPress.

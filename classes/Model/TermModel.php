@@ -2,9 +2,18 @@
 
 namespace WP_Framework\Model;
 
+use WP_Term;
+
 /**
- * Handles a DataObject in WordPress.
+ * Handles the TermModel in WordPress.
  */
-class TermObject extends AbstractObject implements ObjectInterface
+class TermModel extends AbstractModel implements ObjectInterface
 {
+    protected string $type_class = 'Taxonomy';
+    protected string $types_json_folder = 'taxonomies';
+
+    public function get_buildin_object(int $object_id): object
+    {
+        return WP_Term::get_instance($object_id);
+    }
 }

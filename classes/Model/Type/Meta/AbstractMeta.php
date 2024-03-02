@@ -43,7 +43,7 @@ interface MetaInterface
 /**
  * Abstract class for creating custom meta fields in WordPress.
  */
-abstract class Meta
+abstract class AbstractMeta
 {
     /**
      * The unique key for the meta field.

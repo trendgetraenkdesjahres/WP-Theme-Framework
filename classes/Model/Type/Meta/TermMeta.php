@@ -4,7 +4,7 @@ namespace WP_Framework\Model\Type\Meta;
 
 use WP_Term;
 
-class TermMeta extends Meta implements MetaInterface
+class TermMeta extends AbstractMeta implements MetaInterface
 {
     public function get_meta_type(): string
     {
