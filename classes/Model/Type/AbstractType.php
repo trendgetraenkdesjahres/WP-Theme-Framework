@@ -2,6 +2,7 @@
 
 namespace WP_Framework\Model\Type;
 
+use WP_Framework\Model\Type\Meta\AbstractMeta;
 use WP_Framework\Model\Type\Meta\MetaInterface;
 use WP_Framework\Utils\JsonFile;
 
@@ -45,7 +46,16 @@ interface TypeInterface
  */
 abstract class AbstractType
 {
+    /**
+     * Array to store meta fields in.
+     */
+    protected array $meta = [];
+
+    /**
+     * The name of the model this type is for.
+     */
     protected string $model_name = 'abstract ( :-0 ) abstract';
+
     /**
      * Tag which is used for the hook in the "add_action" function to register this Type.
      */
@@ -66,19 +76,19 @@ abstract class AbstractType
     }
 
     /**
-     * Register custom meta fields for this object type.
+     * Register custom meta fields for this model type.
      *
      * @param MetaInterface $meta The WP_Framework Meta object to register.
      * @return AbstractType The modified AbstractType instance.
      */
     public function register_meta(MetaInterface $meta): AbstractType
     {
-        $meta->register($this->name);
+        $this->meta[$meta->name] = $meta->register($this->name);
         return $this;
     }
 
     /**
-     * Unregister custom meta fields for this post type.
+     * Unregister custom meta fields for this model type.
      *
      * @param string|MetaInterface $meta The WP_Framework Meta object or a string (builtin Meta) to unregister.
      * @return AbstractType The modified AbstractType instance.
@@ -90,6 +100,21 @@ abstract class AbstractType
             return $this;
         }
         $meta->unregister($this->model_name);
+        unset($this->meta[$meta->name]);
         return $this;
+    }
+
+    /**
+     * Get a meta object of this model type.
+     *
+     * @param string $name the (serialized) name of the meta.
+     * @return AbstractType The modified AbstractType instance.
+     */
+    public function get_meta(string $name): AbstractMeta
+    {
+        if (!isset($this->meta[$name])) {
+            throw new \Error("A {$this->model_name}-meta named '$name' is not registered");
+        }
+        return $this->meta[$name];
     }
 }

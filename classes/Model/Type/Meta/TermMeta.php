@@ -57,8 +57,8 @@ class TermMeta extends AbstractMeta implements MetaInterface
         remove_action("{$assiged_to_object_type}_add_form_fields", $this->edit());
 
         # remove save method from hooks
-        add_action('edit_term', $this->save());
-        add_action('create_term', $this->save());
+        remove_action('edit_term', $this->save());
+        remove_action('create_term', $this->save());
         return $this;
     }
 
@@ -113,7 +113,7 @@ class TermMeta extends AbstractMeta implements MetaInterface
             if ($tag instanceof WP_Term) {
                 $input_field_value = $this->get_current_value($tag->term_id, 'term');
             }
-            echo "<tr class='form-field {$this->meta_key}'>
+            echo "<tr class='form-field {$this->meta_key}'>\n
 			<th scope='row'><label for='{$this->meta_key}'>{$this->name}</label></th>\n
 			<td>" . $this->get_valid_input_field($input_field_value) . "</td>\n
 		    </tr>";

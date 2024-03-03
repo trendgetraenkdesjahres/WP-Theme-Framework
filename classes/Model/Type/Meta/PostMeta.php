@@ -9,11 +9,6 @@ namespace WP_Framework\Model\Type\Meta;
  */
 class PostMeta extends AbstractMeta implements MetaInterface
 {
-    public function get_meta_type(): string
-    {
-        return 'post';
-    }
-
     /**
      * Registers the post meta field.
      * @param string $assign_to_object_type The type of post ('post', 'page', ...).
@@ -93,7 +88,7 @@ class PostMeta extends AbstractMeta implements MetaInterface
     /**
      * The Edit Method which will be registred. Not really useful for you.
      *
-     * @return callable The save function.
+     * @return callable The edit function.
      */
     private function edit($assign_to_object_type): callable
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_Framework\Model\Type\Meta;
+namespace WP_Framework\Model\Meta;
 
 use DOMDocument;
 
@@ -10,27 +10,25 @@ use DOMDocument;
 interface MetaInterface
 {
     /**
-     * Registers the object-type's meta field.
-     * @param string $assign_to_object_type The type of object ('post', 'page', 'category'...).
+     * Registers the model's meta field.
      *
      * @return MetaInterface The current instance of PostMeta.
      */
-    public function register(string $assign_to_object_type): MetaInterface;
+    public function register(): MetaInterface;
 
     /**
-     * Unregisters the object-type's meta field.
-     * @param string $assign_to_object_type The type of object ('post', 'page', 'category'...).
+     * Unregisters the models's meta field.
      *
-     * @return TypeInterface The modified PostType instance.
+     * @return MetaInterface The modified PostType instance.
      */
-    public function unregister(string $assiged_to_object_type): MetaInterface;
+    public function unregister(): MetaInterface;
 
     /**
-     * Check if the custom object type is registered.
+     * Check if the models's meta is registered.
      *
      * @return bool True if the post type is registered, false otherwise.
      */
-    public function is_registered(string $assiged_to_object_type = ''): bool;
+    public function is_registered(): bool;
 }
 
 /**

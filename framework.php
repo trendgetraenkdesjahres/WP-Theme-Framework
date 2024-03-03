@@ -10,8 +10,14 @@ require 'classes/Framework.php';
 
 # get instance
 use WP_Framework\Framework;
-use WP_Framework\Model\Type\Meta\PostMeta;
+use WP_Framework\Model\DataModel;
 
+
+# define function to use framework and global var.
+function framework(): Framework
+{
+    return Framework::get_instance();
+}
 $framework = Framework::get_instance();
 
 
@@ -36,32 +42,21 @@ function str_validate(string $needle, string ...$haystack)
     return $needle;
 }
 
-/**
- * Custom Taxonomies
- * Adds the custom taxonomies, define in the taxonomies/ folder.
- * put json there, with properties as in the link
- * the slug for the taxonomy type goes by it's file name
- * @link https://developer.wordpress.org/reference/functions/register_taxonomy/
- * */
+$calender = DataModel::create(
+    name: 'appointment',
+    has_meta: true,
+    owner_type: 'client'
+);
 
-$framework
-    ->get_model('TermModel')
-    ->register_types_from_folder();
+$calender
+    ->add_property('time', 'datetime', is_indexable: true)
+    ->add_property('duration', 'int(11) unsigned')
+    ->add_property('status', 'varchar(20)', is_indexable: true)
+    ->add_property('notes', 'text', true);
 
-/**
- * Custom Post Types
- * Adds the custom Post Types, define in the post-types/ folder.
- * put json of the args there, with properties as in the link
- * the slug for the post type goes by it's file name
- * @link https://developer.wordpress.org/plugins/post-types/registering-custom-post-types/
- * */
+$framework->register_model($calender)->get_model('appointment');
+var_dump($framework);
 
-$framework
-    ->get_model('PostModel')
-    ->register_types_from_folder();
-
-
-$framework->get_model('PostModel')->get_type('project')->register_meta(PostMeta::create_text('Text Feld', 'zum testen'));
 
 /* blocks */
 
@@ -76,8 +71,9 @@ foreach ($custom_block_folders as $custom_block_folder) {
         return new WP_Error("No block.json found in '$custom_block_folder'.");
     }
     $custom_block = new CustomBlock($custom_block_folder);
-    add_action('init', [$custom_block, 'register']);;
+    add_action('init', [$custom_block, 'register']);
 }
+
 
 $custom_blocks_script = new ScriptAsset(
     path: "assets/js/custom-block/register.js",

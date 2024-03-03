@@ -3,10 +3,15 @@
 namespace WP_Framework;
 
 use WP_Framework\Model\AbstractModel;
+use WP_Framework\Model\DataModel;
 
 class Framework
 {
     private static $instance;
+
+    public readonly string $table_prefix;
+
+    protected array $models = [];
 
     # Private constructor to prevent direct instantiation
     private function __construct()
@@ -16,13 +21,15 @@ class Framework
     public static function get_instance(): self
     {
         if (self::$instance === null) {
+            self::init_autoload();
             self::$instance = new self();
-            self::$instance->init();
+            self::$instance->table_prefix = 'fw';
+            self::$instance->register_buildin_models();
         }
         return self::$instance;
     }
 
-    private function init()
+    private static function init_autoload()
     {
         /**
          * Register the function to autoload classes from the 'WP_Framework' namespace
@@ -36,55 +43,74 @@ class Framework
         });
     }
 
-    /**
-     * Method get_data_object
-     *
-     * @param string $object_type_name [explicite description]
-     *
-     * @return AbstractModel
-     */
-    public function get_model(string $object_name): AbstractModel
+    private function register_buildin_models()
     {
-        # check the Object string, if it's actually a Object class.
-        $object_name = "WP_Framework\Model\\" . $object_name;
-        if (!is_subclass_of($object_name, 'WP_Framework\Model\ObjectInterface')) {
-            throw new \Error("'$object_name' is not implementing WP_Framework\Model\ObjectInterface");
-        }
-        return new $object_name();
+        $this->register_model('PostModel');
+        $this->register_model('TermModel');
+        $this->register_model('UserModel');
+        $this->register_model('CommentModel');
+
+        /**
+         * Custom Post Types
+         * Adds the custom Post Types, define in the post-types/ folder.
+         * put json of the args there, with properties as in the link
+         * the slug for the post type goes by it's file name
+         * @link https://developer.wordpress.org/plugins/post-types/registering-custom-post-types/
+         * */
+        $this->models['post']->register_types_from_folder();
+
+        /**
+         * Custom Taxonomies
+         * Adds the custom taxonomies, define in the taxonomies/ folder.
+         * put json there, with properties as in the link
+         * the slug for the taxonomy type goes by it's file name
+         * @link https://developer.wordpress.org/reference/functions/register_taxonomy/
+         * */
+        $this->models['term']->register_types_from_folder();
     }
 
     /**
-     * Register Custom Object Types from .json-files in the $folder.
-     * Adds the custom Term taxonomies, Post Posttypes, or Custom-Object Types.
-     * The slug for the object type goes by it's file name
+     * Method register_model
      *
-     * @param string $object_type A name of a class implementing WP_Framework\Model\Type\TypeInterface (without the namespace)
-     * @param string $folder the folder to glob for jsons in.
-     *k
+     * @param string $model the name of a model-class representing a build-in Model or a DataModel-Instance to create a new model.
+     *
      * @return Framework
-     * */
-    public function register_object_types_from_json_in_folder(string $object_type_name, string $folder): Framework
+     */
+    public function register_model(string|DataModel $model): Framework
     {
-        # check the ObjectType string, if it's actually a ObjectType class.
-        $object_type_name = "WP_Framework\Model\Type\\" . $object_type_name;
-        if (!is_subclass_of($object_type_name, 'WP_Framework\Model\Type\TypeInterface')) {
-            throw new \Error("'$object_type_name' is not implementing WP_Framework\Model\Type\TypeInterface");
+        #  register a custom Model
+        if (!$model instanceof DataModel) {
+            $model = self::create_buildin_model($model);
         }
-
-        # check for json files.
-        if (!$custom_object_type_files = glob(THEME_DIR . "$folder/*.json")) {
-            throw new \Error("'" . THEME_DIR . "$folder' does not exist or is contains no json");
-        };
-
-        # register the Object Types (ignore '.example')
-        foreach ($custom_object_type_files as $custom_object_type_file) {
-            if (str_starts_with(
-                haystack: basename($custom_object_type_file),
-                needle: '.example'
-            )) continue;
-            $object_type = $object_type_name::create_from_json($custom_object_type_file);
-            $object_type->register();
-        }
+        $this->models[$model->name] = $model;
         return $this;
+    }
+
+    private static function create_buildin_model(string $model_name): AbstractModel
+    {
+        # Can't register DataModel statically. registration only possible with an DataModel instance.
+        if ($model_name == 'DataModel') {
+            throw new \Error("DataModel needs to be implemented by an actual Object of Datamodel. Not by it's class");
+        }
+        # check the model string, if it's actually a Model implementation.
+        $full_model_name = "WP_Framework\Model\\" . $model_name;
+        if (!is_subclass_of($full_model_name, 'WP_Framework\Model\ModelInterface')) {
+            throw new \Error("'$model_name' is not implementing WP_Framework\Model\ModelInterface");
+        }
+        return new $full_model_name();
+    }
+    /**
+     * Method get_model
+     *
+     * @param string $name [explicite description]
+     *
+     * @return AbstractModel
+     */
+    public function get_model(string $name): AbstractModel
+    {
+        if (!isset($this->models[$name])) {
+            throw new \Error("A model named '$name' is not registered");
+        }
+        return $this->models[$name];
     }
 }
