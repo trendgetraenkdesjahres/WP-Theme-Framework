@@ -8,23 +8,26 @@ define('FRAMEWORK_DIR', dirname(__FILE__) . '/');
 # require main class
 require 'classes/Framework.php';
 
-# get instance
+
 use WP_Framework\Framework;
 use WP_Framework\Model\DataModel;
 
 
-# define function to use framework and global var.
+# get instance & define function to use framework and global var.
 function framework(): Framework
 {
-    return Framework::get_instance();
+    if (!isset($GLOBALS['framework'])) {
+        $GLOBALS['framework'] = Framework::get_instance();
+    }
+    return $GLOBALS['framework'];
 }
-$framework = Framework::get_instance();
 
 
 /**
  * ALL BELOWL: TO BE MOVED INTO Framework-methods
  */
 
+framework()->database->drop_orphaned_tables(framework()->get_models());
 
 /**
  * Util Functions
@@ -42,20 +45,11 @@ function str_validate(string $needle, string ...$haystack)
     return $needle;
 }
 
-$calender = DataModel::create(
-    name: 'appointment',
-    has_meta: true,
-    owner_type: 'client'
-);
+$calender = new DataModel('abstract', true, true, false);
+$framework->register_model($calender);
 
-$calender
-    ->add_property('time', 'datetime', is_indexable: true)
-    ->add_property('duration', 'int(11) unsigned')
-    ->add_property('status', 'varchar(20)', is_indexable: true)
-    ->add_property('notes', 'text', true);
+/* TODO Database::migrate_registered_models(); */
 
-$framework->register_model($calender)->get_model('appointment');
-var_dump($framework);
 
 
 /* blocks */

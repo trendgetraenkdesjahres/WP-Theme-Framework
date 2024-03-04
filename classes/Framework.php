@@ -2,6 +2,8 @@
 
 namespace WP_Framework;
 
+use WP_Framework\CLI\CLI;
+use WP_Framework\Database\Database;
 use WP_Framework\Model\AbstractModel;
 use WP_Framework\Model\DataModel;
 
@@ -9,7 +11,8 @@ class Framework
 {
     private static $instance;
 
-    public readonly string $table_prefix;
+    public readonly Database $database;
+    public readonly false|CLI $cli;
 
     protected array $models = [];
 
@@ -21,29 +24,37 @@ class Framework
     public static function get_instance(): self
     {
         if (self::$instance === null) {
-            self::init_autoload();
             self::$instance = new self();
-            self::$instance->table_prefix = 'fw';
-            self::$instance->register_buildin_models();
+            self::$instance
+                ->register_class_autoload()
+                ->init()
+                ->register_buildin_models();
         }
         return self::$instance;
     }
 
-    private static function init_autoload()
+    private function init(): Framework
     {
         /**
-         * Register the function to autoload classes from the 'WP_Framework' namespace
+         * Adds the Database singleton.
          */
-        spl_autoload_register(function ($class) {
-            $class_name_array = explode("\\", $class);
-            if (array_shift($class_name_array) == 'WP_Framework') {
-                $class_name = implode("/", $class_name_array);
-                include FRAMEWORK_DIR . "classes/$class_name.php";
-            }
-        });
+        $this->database = Database::get_instance();
+
+        /**
+         * Adds the Command Line Interface singleton.
+         */
+        $this->cli = CLI::get_instance();
+
+        /**
+         * Registers Commands to the Interface.
+         */
+        if ($this->cli) {
+            $this->cli->register_command('migrate_all', [$this->database, 'migrate_registered_models']);
+        }
+        return $this;
     }
 
-    private function register_buildin_models()
+    private function register_buildin_models(): Framework
     {
         $this->register_model('PostModel');
         $this->register_model('TermModel');
@@ -67,6 +78,8 @@ class Framework
          * @link https://developer.wordpress.org/reference/functions/register_taxonomy/
          * */
         $this->models['term']->register_types_from_folder();
+
+        return $this;
     }
 
     /**
@@ -86,6 +99,11 @@ class Framework
         return $this;
     }
 
+    public function migrate_models()
+    {
+        $this->database->create_model_tables($this->models);
+    }
+
     private static function create_buildin_model(string $model_name): AbstractModel
     {
         # Can't register DataModel statically. registration only possible with an DataModel instance.
@@ -99,6 +117,7 @@ class Framework
         }
         return new $full_model_name();
     }
+
     /**
      * Method get_model
      *
@@ -112,5 +131,35 @@ class Framework
             throw new \Error("A model named '$name' is not registered");
         }
         return $this->models[$name];
+    }
+
+    public function get_models(bool $include_build_ins = false): array
+    {
+        if ($include_build_ins) {
+            return $this->models;
+        }
+
+        $models = [];
+        foreach ($this->models as $model) {
+            if ($model instanceof DataModel) {
+                array_push($models, $model);
+            }
+        }
+        return $models;
+    }
+
+    private function register_class_autoload(): Framework
+    {
+        /**
+         * Register the function to autoload classes from the 'WP_Framework' namespace
+         */
+        spl_autoload_register(function ($class) {
+            $class_name_array = explode("\\", $class);
+            if (array_shift($class_name_array) == 'WP_Framework') {
+                $class_name = implode("/", $class_name_array);
+                include FRAMEWORK_DIR . "classes/$class_name.php";
+            }
+        });
+        return $this;
     }
 }

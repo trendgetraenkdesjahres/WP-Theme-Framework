@@ -12,7 +12,7 @@ class TermModel extends AbstractModel implements ModelInterface
     public string $name = 'term';
     protected ?string $type_class = 'Taxonomy';
     protected ?string $types_json_folder = 'taxonomies';
-    protected bool $has_types = true;
+    public bool $has_types = true;
 
     public function get_buildin_object(int $object_id): object
     {

@@ -48,12 +48,12 @@ abstract class AbstractModel
     /**
      * This model supports meta values for it's instances.
      */
-    protected bool $has_meta = true;
+    public bool $has_meta = true;
 
     /**
      * This model supports sub types.
      */
-    protected bool $has_types = false;
+    public bool $has_types = false;
 
     public function get_buildin_object(int $object_id): object
     {
