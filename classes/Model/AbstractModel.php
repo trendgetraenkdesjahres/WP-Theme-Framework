@@ -12,19 +12,19 @@ use WP_Framework\Model\Type\TypeInterface;
 abstract class AbstractModel
 {
     /**
+     * The internal name of this model.
+     */
+    public string $name;
+
+    /**
+     * This model supports sub types.
+     */
+    public bool $has_types = false;
+
+    /**
      * Array to store types in.
      */
     protected array $types = [];
-
-    /**
-     * Array to store meta fields in.
-     */
-    protected array $meta = [];
-
-    /**
-     * The internal name of this model.
-     */
-    public string $name = 'abstract ( :-0 ) abstract';
 
     /**
      * The type-class name for this model. null = disable types for this model.
@@ -42,9 +42,9 @@ abstract class AbstractModel
     public bool $has_meta = true;
 
     /**
-     * This model supports sub types.
+     * Array to store meta fields in.
      */
-    public bool $has_types = false;
+    protected array $meta = [];
 
     public function register_type(TypeInterface $type): AbstractModel
     {
