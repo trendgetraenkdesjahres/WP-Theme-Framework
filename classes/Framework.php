@@ -2,6 +2,7 @@
 
 namespace WP_Framework;
 
+use WP_Framework\AdminPanel\Screen;
 use WP_Framework\CLI\CLI;
 use WP_Framework\Database\Database;
 use WP_Framework\Model\AbstractModel;
@@ -15,6 +16,7 @@ class Framework
     public readonly false|CLI $cli;
 
     protected array $models = [];
+    protected array $screens = [];
 
     # Private constructor to prevent direct instantiation
     private function __construct()
@@ -54,6 +56,48 @@ class Framework
         return $this;
     }
 
+    public function register_screen(Screen $admin_screen): Framework
+    {
+        $this->screens[$admin_screen->name] = $admin_screen;
+        return $this;
+    }
+
+    public function unregister_screen(string $admin_screen_name): Framework
+    {
+        unset($this->screens[$admin_screen_name]);
+        return $this;
+    }
+
+    public function is_registered_screen(string $admin_screen_name): bool
+    {
+        return isset($this->screens[$admin_screen_name]);
+    }
+
+    public function get_screen(string $admin_screen_name): Screen
+    {
+        if (!isset($this->screens[$admin_screen_name])) {
+            throw new \Error("An admin-screen named '$admin_screen_name' is not registered");
+        }
+        return $this->screens[$admin_screen_name];
+    }
+
+    /**
+     * Method register_model
+     *
+     * @param string $model the name of a model-class representing a build-in Model or a DataModel-Instance to create a new model.
+     *
+     * @return Framework
+     */
+    public function register_model(string|DataModel $model): Framework
+    {
+        #  register a custom Model
+        if (!$model instanceof DataModel) {
+            $model = self::create_buildin_model($model);
+        }
+        $this->models[$model->name] = $model;
+        return $this;
+    }
+
     private function register_buildin_models(): Framework
     {
         $this->register_model('PostModel');
@@ -82,28 +126,7 @@ class Framework
         return $this;
     }
 
-    /**
-     * Method register_model
-     *
-     * @param string $model the name of a model-class representing a build-in Model or a DataModel-Instance to create a new model.
-     *
-     * @return Framework
-     */
-    public function register_model(string|DataModel $model): Framework
-    {
-        #  register a custom Model
-        if (!$model instanceof DataModel) {
-            $model = self::create_buildin_model($model);
-        }
-        $this->models[$model->name] = $model;
-        return $this;
-    }
-
-    public function migrate_models()
-    {
-        $this->database->create_model_tables(...$this->models);
-    }
-
+    # maybe move this function to a better location??
     private static function create_buildin_model(string $model_name): AbstractModel
     {
         # Can't register DataModel statically. registration only possible with an DataModel instance.
@@ -125,12 +148,12 @@ class Framework
      *
      * @return AbstractModel
      */
-    public function get_model(string $name): AbstractModel
+    public function get_model(string $model_name): AbstractModel
     {
-        if (!isset($this->models[$name])) {
-            throw new \Error("A model named '$name' is not registered");
+        if (!isset($this->models[$model_name])) {
+            throw new \Error("A model named '$model_name' is not registered");
         }
-        return $this->models[$name];
+        return $this->models[$model_name];
     }
 
     public function get_models(bool $include_build_ins = false): array
