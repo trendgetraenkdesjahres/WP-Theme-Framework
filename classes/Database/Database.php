@@ -64,7 +64,6 @@ class Database
 
         # get current tables
         $current_tables = array_map('current', $wpdb->get_results("SHOW TABLES", ARRAY_N));
-        var_dump($current_tables);
 
         # reduce to tables with framework-prefix
         $current_tables = array_filter($current_tables, function ($element) {
