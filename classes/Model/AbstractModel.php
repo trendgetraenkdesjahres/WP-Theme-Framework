@@ -61,7 +61,13 @@ abstract class AbstractModel
     }
 
     /**
-     * Method register_types_from_folder
+     * Register Custom Post Types, Taxonomies from json files...
+     *
+     * Adds the custom Post Types, taxonomies ..., define in the post-types/ folder.
+     * put json of the args there, with properties as in the link
+     * the slug for the post type goes by it's file name
+     * @link https://developer.wordpress.org/plugins/post-types/registering-custom-post-types/
+     * @link https://developer.wordpress.org/reference/functions/register_taxonomy/
      *
      * @param string $type_class (like "PostType", "Taxonomy", ...)
      * @param string $json_folder

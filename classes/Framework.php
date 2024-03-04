@@ -30,8 +30,7 @@ class Framework
             self::$instance
                 ->register_class_autoload()
                 ->init()
-                ->register_buildin_models()
-                ->register_buildin_model_types_from_folder();
+                ->register_buildin_models();
         }
         return self::$instance;
     }
@@ -91,6 +90,7 @@ class Framework
      */
     public function register_model(AbstractModel $model): Framework
     {
+        $model->register_types_from_folder();
         $this->models[$model->name] = $model;
         return $this;
     }
@@ -101,7 +101,6 @@ class Framework
         $this->register_model(new BuildinModel('post', 'PostType', 'post-types', true));
         $this->register_model(new BuildinModel('term', 'Taxonomy', 'taxonomies', true));
         $this->register_model(new BuildinModel('user'));
-
         return $this;
     }
 
@@ -135,20 +134,6 @@ class Framework
         return $models;
     }
 
-    private function register_buildin_model_types_from_folder()
-    {
-        foreach ($this->models as $model) {
-            /**
-             * Custom Post Types, Taxonomies...
-             * Adds the custom Post Types, taxonomies ..., define in the post-types/ folder.
-             * put json of the args there, with properties as in the link
-             * the slug for the post type goes by it's file name
-             * @link https://developer.wordpress.org/plugins/post-types/registering-custom-post-types/
-             * @link https://developer.wordpress.org/reference/functions/register_taxonomy/
-             * */
-            $model->register_types_from_folder();
-        }
-    }
     private function register_class_autoload(): Framework
     {
         /**
