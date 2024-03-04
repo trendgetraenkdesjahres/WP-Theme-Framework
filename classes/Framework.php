@@ -101,7 +101,7 @@ class Framework
 
     public function migrate_models()
     {
-        $this->database->create_model_tables($this->models);
+        $this->database->create_model_tables(...$this->models);
     }
 
     private static function create_buildin_model(string $model_name): AbstractModel
