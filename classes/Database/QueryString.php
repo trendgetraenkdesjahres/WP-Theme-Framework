@@ -2,7 +2,7 @@
 
 namespace WP_Framework\Database;
 
-use WP_Framework\Model\DataModel;
+use WP_Framework\Model\CustomModel;
 
 class QueryString
 {
@@ -11,9 +11,9 @@ class QueryString
      *
      * @return string The SQL query for migration.
      */
-    public static function create_table(DataModel $model): string
+    public static function create_table(CustomModel $model): string
     {
-        $meta_table_name = Database::$table_prefix . $model->name . "s";
+        $meta_table_name = Database::$table_prefix . "_" . $model->name . "s";
 
         # go
         $query = "CREATE TABLE $meta_table_name (";
@@ -59,7 +59,7 @@ class QueryString
     public static function create_meta_table(string $model_name): string
     {
         $max_index_length = 19; # is defined in wp_get_db_schema
-        $meta_table_name = Database::$table_prefix . $model_name . "meta";
+        $meta_table_name = Database::$table_prefix . "_" . $model_name . "meta";
 
         # go
         $query = "CREATE TABLE $meta_table_name (";

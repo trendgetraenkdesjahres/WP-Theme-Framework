@@ -158,7 +158,7 @@ class Framework
             $class_name_array = explode("\\", $class);
             if (array_shift($class_name_array) == 'WP_Framework') {
                 $class_name = implode("/", $class_name_array);
-                include FRAMEWORK_DIR . "classes/$class_name.php";
+                require FRAMEWORK_DIR . "classes/$class_name.php";
             }
         });
         return $this;

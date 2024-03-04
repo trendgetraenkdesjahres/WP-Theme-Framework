@@ -2,7 +2,7 @@
 
 namespace WP_Framework\Database;
 
-use WP_Framework\Model\DataModel;
+use WP_Framework\Model\CustomModel;
 
 class Database
 {
@@ -33,7 +33,7 @@ class Database
      * @careful BE CAREFUL
      * @return array sql-results
      */
-    public static function create_model_tables(DataModel ...$models): array
+    public static function create_model_tables(CustomModel ...$models): array
     {
         # TODO clean up
         $query = '';
@@ -73,7 +73,7 @@ class Database
         # create array of tables to keep
         $keep_tables = [];
         foreach ($registred_models as $model) {
-            if (!$model instanceof DataModel) {
+            if (!$model instanceof CustomModel) {
                 throw new \Error("\$registred_models can only contain DataModel objects.");
             }
             array_push($keep_tables, $model->table_name);

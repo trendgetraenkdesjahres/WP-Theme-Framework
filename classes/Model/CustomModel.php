@@ -10,7 +10,7 @@ use WP_Framework\Database\SQLSyntax;
  *
  * @package WP_Framework\Model
  */
-class DataModel extends AbstractModel
+class CustomModel extends AbstractModel
 {
     /**
      * @var string|null The class name for data types.
@@ -66,11 +66,11 @@ class DataModel extends AbstractModel
      * @param bool   $nullable      Indicates whether the property is nullable.
      * @param bool   $is_indexable  Indicates whether the property is indexable.
      * @param mixed  $default_value The default value for the property.
-     * @return DataModel
+     * @return CustomModel
      *
      * @throws \Error If the key, type, or SQL type is invalid.
      */
-    public function add_property(string $key, string $sql_type, bool $nullable = false, bool $is_indexable = false, mixed $default_value = null): DataModel
+    public function add_property(string $key, string $sql_type, bool $nullable = false, bool $is_indexable = false, mixed $default_value = null): CustomModel
     {
         $property = [];
 

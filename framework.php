@@ -8,10 +8,9 @@ define('FRAMEWORK_DIR', dirname(__FILE__) . '/');
 # require main class
 require 'classes/Framework.php';
 
-
+use WP_Framework\Database\Database;
 use WP_Framework\Framework;
-use WP_Framework\Model\DataModel;
-
+use WP_Framework\Model\CustomModel;
 
 # get instance & define function to use framework and global var.
 function framework(): Framework
@@ -21,13 +20,13 @@ function framework(): Framework
     }
     return $GLOBALS['framework'];
 }
+$framework = Framework::get_instance();
 
 
 /**
  * ALL BELOWL: TO BE MOVED INTO Framework-methods
  */
 
-framework()->database->drop_orphaned_tables(framework()->get_models());
 
 /**
  * Util Functions
@@ -44,11 +43,8 @@ function str_validate(string $needle, string ...$haystack)
     }
     return $needle;
 }
-
-$calender = new DataModel('abstract', true, true, false);
+$calender = new CustomModel('abstractibuymsisadf', true, true, false);
 $framework->register_model($calender);
-
-/* TODO Database::migrate_registered_models(); */
 
 
 
