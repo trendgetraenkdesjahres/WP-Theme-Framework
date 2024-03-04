@@ -109,6 +109,7 @@ class DataModel extends AbstractModel implements ModelInterface
 
     public function register()
     {
+        Admin::add_screen()
         /*
         - add to menu
         - add a screen
