@@ -10,17 +10,17 @@ use WP_Framework\Database\SQLSyntax;
  *
  * @package WP_Framework\Model
  */
-class DataModel extends AbstractModel implements ModelInterface
+class DataModel extends AbstractModel
 {
     /**
      * @var string|null The class name for data types.
      */
-    protected ?string $type_class = 'DataType';
+    public ?string $type_class = 'DataType';
 
     /**
      * @var string|null The folder containing JSON files for data types.
      */
-    protected ?string $types_json_folder = null;
+    public ?string $types_json_folder = null;
 
     /**
      * @var string The name of the table.

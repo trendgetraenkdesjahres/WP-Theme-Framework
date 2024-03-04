@@ -6,7 +6,7 @@ use WP_Framework\AdminPanel\Screen;
 use WP_Framework\CLI\CLI;
 use WP_Framework\Database\Database;
 use WP_Framework\Model\AbstractModel;
-use WP_Framework\Model\DataModel;
+use WP_Framework\Model\BuildinModel;
 
 class Framework
 {
@@ -30,7 +30,8 @@ class Framework
             self::$instance
                 ->register_class_autoload()
                 ->init()
-                ->register_buildin_models();
+                ->register_buildin_models()
+                ->register_buildin_model_types_from_folder();
         }
         return self::$instance;
     }
@@ -84,61 +85,24 @@ class Framework
     /**
      * Method register_model
      *
-     * @param string $model the name of a model-class representing a build-in Model or a DataModel-Instance to create a new model.
+     * @param AbstractModel $model the name of a model-class representing a build-in Model or a DataModel-Instance to create a new model.
      *
      * @return Framework
      */
-    public function register_model(string|DataModel $model): Framework
+    public function register_model(AbstractModel $model): Framework
     {
-        #  register a custom Model
-        if (!$model instanceof DataModel) {
-            $model = self::create_buildin_model($model);
-        }
         $this->models[$model->name] = $model;
         return $this;
     }
 
     private function register_buildin_models(): Framework
     {
-        $this->register_model('PostModel');
-        $this->register_model('TermModel');
-        $this->register_model('UserModel');
-        $this->register_model('CommentModel');
-
-        /**
-         * Custom Post Types
-         * Adds the custom Post Types, define in the post-types/ folder.
-         * put json of the args there, with properties as in the link
-         * the slug for the post type goes by it's file name
-         * @link https://developer.wordpress.org/plugins/post-types/registering-custom-post-types/
-         * */
-        $this->models['post']->register_types_from_folder();
-
-        /**
-         * Custom Taxonomies
-         * Adds the custom taxonomies, define in the taxonomies/ folder.
-         * put json there, with properties as in the link
-         * the slug for the taxonomy type goes by it's file name
-         * @link https://developer.wordpress.org/reference/functions/register_taxonomy/
-         * */
-        $this->models['term']->register_types_from_folder();
+        $this->register_model(new BuildinModel('comment'));
+        $this->register_model(new BuildinModel('post', 'PostType', 'post-types', true));
+        $this->register_model(new BuildinModel('term', 'Taxonomy', 'taxonomies', true));
+        $this->register_model(new BuildinModel('user'));
 
         return $this;
-    }
-
-    # maybe move this function to a better location??
-    private static function create_buildin_model(string $model_name): AbstractModel
-    {
-        # Can't register DataModel statically. registration only possible with an DataModel instance.
-        if ($model_name == 'DataModel') {
-            throw new \Error("DataModel needs to be implemented by an actual Object of Datamodel. Not by it's class");
-        }
-        # check the model string, if it's actually a Model implementation.
-        $full_model_name = "WP_Framework\Model\\" . $model_name;
-        if (!is_subclass_of($full_model_name, 'WP_Framework\Model\ModelInterface')) {
-            throw new \Error("'$model_name' is not implementing WP_Framework\Model\ModelInterface");
-        }
-        return new $full_model_name();
     }
 
     /**
@@ -164,13 +128,27 @@ class Framework
 
         $models = [];
         foreach ($this->models as $model) {
-            if ($model instanceof DataModel) {
+            if (!$model instanceof BuildinModel) {
                 array_push($models, $model);
             }
         }
         return $models;
     }
 
+    private function register_buildin_model_types_from_folder()
+    {
+        foreach ($this->models as $model) {
+            /**
+             * Custom Post Types, Taxonomies...
+             * Adds the custom Post Types, taxonomies ..., define in the post-types/ folder.
+             * put json of the args there, with properties as in the link
+             * the slug for the post type goes by it's file name
+             * @link https://developer.wordpress.org/plugins/post-types/registering-custom-post-types/
+             * @link https://developer.wordpress.org/reference/functions/register_taxonomy/
+             * */
+            $model->register_types_from_folder();
+        }
+    }
     private function register_class_autoload(): Framework
     {
         /**

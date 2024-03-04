@@ -7,15 +7,6 @@ use WP_Framework\Model\Type\AbstractType;
 use WP_Framework\Model\Type\TypeInterface;
 
 /**
- * Interface for object type (post, term, user, comment, ...) fields in WordPress.
- */
-interface ModelInterface
-{
-    public function get_buildin_object(int $object_id): object;
-}
-
-
-/**
  * Handles a object ('post', 'term', 'user', ...) in WordPress.
  */
 abstract class AbstractModel
@@ -38,12 +29,12 @@ abstract class AbstractModel
     /**
      * The type-class name for this model. null = disable types for this model.
      */
-    protected ?string $type_class = null;
+    public ?string $type_class = null;
 
     /**
      * The folder with json-files. null =  disabled types for this model.
      */
-    protected ?string $types_json_folder = null;
+    public ?string $types_json_folder = null;
 
     /**
      * This model supports meta values for it's instances.
@@ -54,11 +45,6 @@ abstract class AbstractModel
      * This model supports sub types.
      */
     public bool $has_types = false;
-
-    public function get_buildin_object(int $object_id): object
-    {
-        throw new \Error("This is not a built in model.");
-    }
 
     public function register_type(TypeInterface $type): AbstractModel
     {
