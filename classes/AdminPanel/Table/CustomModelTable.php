@@ -4,7 +4,7 @@ namespace WP_Framework\AdminPanel\Table;
 
 use WP_Framework\Model\CustomModel;
 
-class ModelTable extends AbstractTable
+class CustomModelTable extends AbstractTable
 {
     public function __construct(CustomModel $model)
     {
@@ -20,7 +20,7 @@ class ModelTable extends AbstractTable
         foreach ($model->properties as $property) {
             $this->add_column(
                 name: $property->key,
-                title: $property->title,
+                title: $property->singular_name,
                 sortable: $property->is_indexable,
                 visible: true
             );

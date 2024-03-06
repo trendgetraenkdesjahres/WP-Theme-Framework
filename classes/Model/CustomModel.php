@@ -3,7 +3,7 @@
 namespace WP_Framework\Model;
 
 use WP_Framework\AdminPanel\Table\AbstractTable;
-use WP_Framework\AdminPanel\Table\ModelTable;
+use WP_Framework\AdminPanel\Table\CustomModelTable;
 use WP_Framework\Database\Database;
 use WP_Framework\Database\SQLSyntax;
 use WP_Framework\Model\Property\Property;
@@ -72,7 +72,7 @@ class CustomModel extends AbstractModel
             $type_property = new Property(
                 key: 'type',
                 sql_type: 'varchar(20)',
-                name: "{$this->name} Type",
+                singular_name: "{$this->name} Type",
                 plural_name: "{$this->name} Types",
                 is_indexable: true,
                 default_value: $this->sanitized_name
@@ -120,10 +120,10 @@ class CustomModel extends AbstractModel
         return Database::$table_prefix . "_" . $this->sanitized_name . "meta";
     }
 
-    public function get_panel_table(): ModelTable
+    public function get_panel_table(): CustomModelTable
     {
         if (!$this->panel_table) {
-            $this->panel_table = new ModelTable($this);
+            $this->panel_table = new CustomModelTable($this);
         }
         return $this->panel_table;
     }

@@ -3,6 +3,7 @@
 namespace WP_Framework\Model;
 
 use WP_Framework\AdminPanel\Table\AbstractTable;
+use WP_Framework\Model\Meta\AbstractMeta;
 use WP_Framework\Model\Meta\MetaInterface;
 use WP_Framework\Model\Type\AbstractType;
 use WP_Framework\Model\Type\TypeInterface;
@@ -154,13 +155,24 @@ abstract class AbstractModel
      * Get a meta object of this model type.
      *
      * @param string $name the (serialized) name of the meta.
-     * @return AbstractType The modified AbstractType instance.
+     * @return AbstractMeta The AbstractMeta instance.
      */
-    public function get_meta(string $name): AbstractModel
+    public function get_meta(string $name): AbstractMeta
     {
         if (!isset($this->meta[$name])) {
             throw new \Error("A {$this->name}-meta named '$name' is not registered");
         }
         return $this->meta[$name];
+    }
+
+    /**
+     * Get all meta objects of this model type.
+     * sorry for the wrong plural.
+     *
+     * @return array The metas.
+     */
+    public function get_metas(): array
+    {
+        return $this->meta;
     }
 }

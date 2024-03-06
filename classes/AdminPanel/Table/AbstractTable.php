@@ -63,17 +63,35 @@ abstract class AbstractTable extends WP_List_Table
 
     public function get_columns(): array
     {
-        return $this->columns;
+        $columns = [];
+        foreach ($this->columns as $column) {
+            if (!$column['sortable'] && !$column['hidden']) {
+                array_push($columns, $column['title']);
+            }
+        }
+        return $columns;
     }
 
     public function get_sortable_columns(): array
     {
-        return [];
+        $columns = [];
+        foreach ($this->columns as $column) {
+            if ($column['sortable']) {
+                array_push($columns, $column['title']);
+            }
+        }
+        return $columns;
     }
 
     public function get_hidden_columns(): array
     {
-        return [];
+        $columns = [];
+        foreach ($this->columns as $column) {
+            if ($column['hidden']) {
+                array_push($columns, $column['title']);
+            }
+        }
+        return $columns;
     }
 
     /**
@@ -91,23 +109,6 @@ abstract class AbstractTable extends WP_List_Table
     }
 
     /**
-     * Display the table.
-     */
-    public function display()
-    {
-        // Output table content
-        echo '<div class="wrap">';
-        echo '<h2>My List Table</h2>';
-        $this->display_tablenav('top');
-        $this->screen->render_screen_reader_content('heading');
-        echo '<form method="post">';
-        $this->search_box('Search', 'search_id');
-        $this->display();
-        echo '</form>';
-        echo '</div>';
-    }
-
-    /**
      * This is method that is used to render a column when no other specific method exists for that column.
      * When WP_List_Tables attempts to render your columns (within single_row_columns()), it first checks for a column-specific method.
      * If none exists, it defaults to this method instead.
@@ -120,5 +121,6 @@ abstract class AbstractTable extends WP_List_Table
      */
     public function column_default($item, $column_name)
     {
+        return $item[$column_name];
     }
 }

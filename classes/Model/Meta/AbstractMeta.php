@@ -3,6 +3,8 @@
 namespace WP_Framework\Model\Meta;
 
 use DOMDocument;
+use WP_Framework\Debug\Debug;
+use WP_Framework\Element\Input\FormControlElement;
 
 /**
  * Interface for custom meta fields in WordPress.
@@ -297,63 +299,17 @@ abstract class AbstractMeta
      */
     protected function get_valid_input_field(mixed $value = ''): string
     {
-        # copy elements
-        $attributes = $this->input_element_attributes;
-
-        # create dom and element
-        $dom = new DOMDocument();
-        $fragment = $dom->createDocumentFragment();
-
-        # create input
-        $input = $dom->createElement($this->input_element_tag_name);
-
-        # create label
-        $label = $dom->createElement('p');
-        $label_text_node = $dom->createTextNode($this->description);
-        $label->appendChild($label_text_node);
-        $label->setAttribute('class', 'description');
-        $label->setAttribute('id', "{$this->meta_key}-description");
-
-        # prepare attributes and content/value
-        $attributes['name'] = $this->meta_key;
-        $attributes['id'] = $this->meta_key;
-
-        switch ($this->input_element_tag_name) {
-            case 'input':
-                $attributes['value'] = $value;
-                $attributes['type'] = $this->input_element_type;
-                break;
-
-            case 'textarea':
-                $text_node = $dom->createTextNode($value);
-                $input->appendChild($text_node);
-                $attributes['type'] = $this->input_element_type;
-                break;
-
-            case 'select':
-                foreach ($this->input_element_options as $option_value => $option_name) {
-                    $option_node = $dom->createElement('option');
-                    $option_name_node = $dom->createTextNode($option_name);
-                    $option_node->appendChild($option_name_node);
-                    $option_node->setAttribute('value', $option_value);
-                    if ($option_value == $value) $option_node->setAttribute('selected', 'selected');
-                    $input->appendChild($option_node);
-                }
-                $attributes['type'] = $this->input_element_type;
-                break;
-
-            default:
-                throw new \Error("HTML Tag '$this->input_element_tag_name' is not accepted.");
-        }
-
-        # set attributes
-        foreach ($attributes as $attribute => $value) {
-            if (isset($value)) $input->setAttribute($attribute, $value);
-        }
-
-        $fragment->appendChild($input);
-        $fragment->appendChild($label);
-        return $dom->saveXML($fragment);
+        $input_field = new FormControlElement(
+            tag_name: $this->input_element_tag_name,
+            attributes: [
+                'id' => $this->meta_key,
+                'value' => $value,
+                'name' => $this->meta_key
+            ],
+            description: $this->description,
+            options: $this->input_element_options
+        );
+        return (string) $input_field;
     }
 
 

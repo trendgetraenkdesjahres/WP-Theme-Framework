@@ -3,7 +3,7 @@
 namespace WP_Framework;
 
 use WP_Framework\AdminPanel\AbstractPanel;
-use WP_Framework\AdminPanel\ModelPanel;
+use WP_Framework\AdminPanel\CustomModelPanel;
 use WP_Framework\CLI\CLI;
 use WP_Framework\Database\Database;
 use WP_Framework\Model\AbstractModel;
