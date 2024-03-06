@@ -1,5 +1,8 @@
 <?php
 
+# require composer
+require 'vendor/autoload.php';
+
 /**
  * Path of WP Framework directory with trailing slash.
  */
@@ -8,12 +11,7 @@ define('FRAMEWORK_DIR', dirname(__FILE__) . '/');
 # require main class
 require 'classes/Framework.php';
 
-use WP_Framework\AdminPanel\AbstractPanel;
-use WP_Framework\AdminPanel\ModelPanel;
-use WP_Framework\Database\QueryString;
 use WP_Framework\Framework;
-use WP_Framework\Model\CustomModel;
-use WP_Framework\Model\Property\Property;
 
 # get instance & define function to use framework and global var.
 function framework(): Framework
@@ -45,21 +43,6 @@ function str_validate(string $needle, string ...$haystack)
     }
     return $needle;
 }
-
-$appointments = new CustomModel('Appointment', 'Appointments', true, true, false, 'client');
-$time = new Property('time', 'datetime', 'Time', 'Times', false, true);
-$duration = new Property('duration', 'int(255)', 'Duration', 'Durations');
-$status = new Property('status', 'varchar(20)', 'Status', 'Status', false, true);
-$notes = new Property('note', 'text', 'Note', 'Notes', true);
-
-$appointments->register_property($time, $duration, $status, $notes);
-$framework->register_model($appointments);
-
-$appointments_panel = new ModelPanel($appointments->name, $appointments->plural_name);
-$framework->register_panel($appointments_panel);
-
-/* $framework->database->drop_orphaned_tables([]);
-$framework->database->create_model_tables($appointments); */
 
 
 
