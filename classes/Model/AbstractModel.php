@@ -2,6 +2,7 @@
 
 namespace WP_Framework\Model;
 
+use WP_Framework\AdminPanel\Table\AbstractTable;
 use WP_Framework\Model\Meta\MetaInterface;
 use WP_Framework\Model\Type\AbstractType;
 use WP_Framework\Model\Type\TypeInterface;
@@ -45,6 +46,11 @@ abstract class AbstractModel
      * Array to store meta fields in.
      */
     protected array $meta = [];
+
+    /**
+     * The optional models custom admin-panel table representation.
+     */
+    protected ?AbstractTable $panel_table = null;
 
     public function register_type(TypeInterface $type): AbstractModel
     {

@@ -2,11 +2,13 @@
 
 namespace WP_Framework;
 
-use WP_Framework\AdminPanel\Screen;
+use WP_Framework\AdminPanel\AbstractPanel;
+use WP_Framework\AdminPanel\ModelPanel;
 use WP_Framework\CLI\CLI;
 use WP_Framework\Database\Database;
 use WP_Framework\Model\AbstractModel;
 use WP_Framework\Model\BuildinModel;
+use WP_Framework\Model\CustomModel;
 
 class Framework
 {
@@ -16,7 +18,7 @@ class Framework
     public readonly false|CLI $cli;
 
     protected array $models = [];
-    protected array $screens = [];
+    protected array $panels = [];
 
     # Private constructor to prevent direct instantiation
     private function __construct()
@@ -56,29 +58,30 @@ class Framework
         return $this;
     }
 
-    public function register_screen(Screen $admin_screen): Framework
+    public function register_panel(AbstractPanel $panel): Framework
     {
-        $this->screens[$admin_screen->name] = $admin_screen;
+        $this->panels[$panel->name] = $panel->register();
         return $this;
     }
 
-    public function unregister_screen(string $admin_screen_name): Framework
+    public function unregister_panel(string $admin_panel_name): Framework
     {
-        unset($this->screens[$admin_screen_name]);
+        $this->panels[$admin_panel_name]->unregister();
+        unset($this->panels[$admin_panel_name]);
         return $this;
     }
 
-    public function is_registered_screen(string $admin_screen_name): bool
+    public function is_registered_panel(string $admin_panel_name): bool
     {
-        return isset($this->screens[$admin_screen_name]);
+        return isset($this->panels[$admin_panel_name]);
     }
 
-    public function get_screen(string $admin_screen_name): Screen
+    public function get_panel(string $admin_panel_name): AbstractPanel
     {
-        if (!isset($this->screens[$admin_screen_name])) {
-            throw new \Error("An admin-screen named '$admin_screen_name' is not registered");
+        if (!isset($this->panels[$admin_panel_name])) {
+            throw new \Error("An admin-panel named '$admin_panel_name' is not registered");
         }
-        return $this->screens[$admin_screen_name];
+        return $this->panels[$admin_panel_name];
     }
 
     /**
@@ -88,10 +91,12 @@ class Framework
      *
      * @return Framework
      */
-    public function register_model(AbstractModel $model): Framework
+    public function register_model(AbstractModel ...$model): Framework
     {
-        $model->register_types_from_folder();
-        $this->models[$model->name] = $model;
+        foreach ($model as $model) {
+            $model->register_types_from_folder();
+            $this->models[$model->name] = $model;
+        }
         return $this;
     }
 

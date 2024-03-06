@@ -43,7 +43,7 @@ class Database
 
             # get the model's meta-table query
             if ($model->has_meta) {
-                $query .= QueryString::create_meta_table($model->name);
+                $query .= QueryString::create_meta_table($model);
             }
         }
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -67,7 +67,7 @@ class Database
 
         # reduce to tables with framework-prefix
         $current_tables = array_filter($current_tables, function ($element) {
-            return str_starts_with($element, self::$table_prefix . "_");
+            return str_starts_with($element, self::$table_prefix . "");
         });
 
         # create array of tables to keep

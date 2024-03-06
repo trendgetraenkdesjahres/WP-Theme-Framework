@@ -2,6 +2,8 @@
 
 namespace WP_Framework\Database;
 
+use WP_Framework\Model\CustomModel;
+
 class SQLSyntax
 {
     /**
@@ -13,6 +15,9 @@ class SQLSyntax
      */
     public static function field_name(string $field_name): bool
     {
+        if (20 < strlen($field_name)) {
+            return false;
+        }
         $first_character = $field_name[0];
         if (!ctype_lower($first_character)) {
             return false;
