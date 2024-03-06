@@ -1,5 +1,7 @@
 {
     "require-dev": {
-        "php-stubs/wp-cli-stubs": "^2.10"
-    }
+        "php-stubs/wp-cli-stubs": "^2.10",
+        "scrivo/highlight.php": "v9.18.1.10"
+    },
+    "require": {}
 }

@@ -1,5 +1,8 @@
 <?php
 
+# require composer
+require 'vendor/autoload.php';
+
 /**
  * Path of WP Framework directory with trailing slash.
  */
@@ -8,9 +11,7 @@ define('FRAMEWORK_DIR', dirname(__FILE__) . '/');
 # require main class
 require 'classes/Framework.php';
 
-use WP_Framework\Database\Database;
 use WP_Framework\Framework;
-use WP_Framework\Model\CustomModel;
 
 # get instance & define function to use framework and global var.
 function framework(): Framework
@@ -43,9 +44,6 @@ function str_validate(string $needle, string ...$haystack)
     }
     return $needle;
 }
-$calender = new CustomModel('abstractibuymsisadf', true, true, false);
-$framework->register_model($calender);
-
 
 
 /* blocks */
