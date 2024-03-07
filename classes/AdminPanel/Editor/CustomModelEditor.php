@@ -10,7 +10,6 @@ class CustomModelEditor extends Editor
 {
     public function __construct(CustomModel $model, ?object $object = null)
     {
-        Debug::dump(framework());
         parent::__construct(
             name: $model->sanitized_name,
             action: 'post.php',
