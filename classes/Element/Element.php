@@ -19,13 +19,13 @@ class Element extends AbstractElement
      * @param array $attributes An array of attributes for the HTML element.
      * @param string|Element ...$content The content, including sub-elements or strings.
      */
-    public function __construct(private string $name, private array $attributes = [], string|Element ...$content)
+    public function __construct(private string $name, private array $attributes = [], Element|string ...$content)
     {
         # init
-        self::$dom = new DOMDocument();
+        $this->dom = new DOMDocument();
 
         # create element
-        $this->node = self::$dom->createElement($this->name);
+        $this->node = $this->dom->createElement($this->name);
 
         # set attributes
         foreach ($this->attributes as $attribute => $value) {

@@ -2,6 +2,7 @@
 
 namespace WP_Framework\AdminPanel;
 
+use WP_Framework\AdminPanel\Editor\CustomModelEditor;
 use WP_Framework\AdminPanel\Table\CustomModelTable;
 use WP_Framework\Model\CustomModel;
 
@@ -28,29 +29,10 @@ class CustomModelPanel extends AbstractPanel
         return ob_get_clean();
     }
 
-    protected function get_editor_body(): string
+    protected function get_editor_body($object_id): string
     {
         ob_start();
-        echo "<form name='post' action='comment.php' method='post' id='post'>";
-        wp_editor(
-            $comment->comment_content,
-            'content',
-            array(
-                'media_buttons' => false,
-                'tinymce'       => false,
-                'quicktags'     => $quicktags_settings,
-            )
-        );
-
-        /**
-         * Fires when comment-specific meta boxes are added.
-         *
-         * @param CustomObject $object Custom Object (of a registred model).
-         */
-        do_action('add_meta_boxes', $this->model->sanitized_name, $object);
-        do_meta_boxes(null, 'normal', $comment);
-
-        echo "</form>";
+        echo  new CustomModelEditor($this->model, $object_id);
         return ob_get_clean();
     }
 }

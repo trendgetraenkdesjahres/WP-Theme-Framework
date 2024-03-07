@@ -17,13 +17,13 @@ class Fragment extends AbstractElement
      *
      * @param string|Element ...$content The content, including sub-elements or strings.
      */
-    public function __construct(string|Element ...$content)
+    public function __construct(Element|string|null ...$content)
     {
         # init
-        self::$dom = new DOMDocument();
+        $this->dom = new DOMDocument();
 
         # create fragment
-        $this->node = self::$dom->createDocumentFragment();
+        $this->node = $this->dom->createDocumentFragment();
 
         # add sub elements and strings
         $this->append_elements_to_node($content);

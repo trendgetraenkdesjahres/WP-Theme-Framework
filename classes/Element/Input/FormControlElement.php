@@ -22,22 +22,15 @@ class FormControlElement extends Fragment
      * @param string $description The description for the form control element.
      * @param array $options Optional options for <select> elements ['value' => 'name', ...].
      */
-    public function __construct(private string $tag_name, private array $attributes, string $description, $options = [])
+    public function __construct(private string $tag_name, private array $attributes, ?string $description = null, $options = [])
     {
-        # build description tag
-        $description_attributes = ['class' => 'description'];
-        if (isset($attributes['id'])) {
-            $description_attributes['id'] = "{$attributes['id']}-description";
-        }
-        $description = new Element('p', $description_attributes, $description);
-
         # create input tags
         switch ($tag_name) {
             case 'input':
                 $input = new Element('input', $attributes);
                 break;
             case 'textarea':
-                $input = new Element('textarea', $attributes, $attributes['value']);
+                $input = new Element('textarea', $attributes, $attributes['value'] ?? '');
                 break;
             case 'select':
                 $option_elements = [];
@@ -54,6 +47,26 @@ class FormControlElement extends Fragment
             default:
                 throw new \Error("No handling for '$tag_name' defined.");
         }
+
+        # build description tag
+        if ($description) {
+            $description_attributes = ['class' => 'description'];
+            if (isset($attributes['id'])) {
+                $description_attributes['id'] = "{$attributes['id']}-description";
+            }
+            $description = new Element('p', $description_attributes, $description);
+            parent::__construct($input, $description ?? null);
+            return;
+        } elseif (isset($attributes['id'])) {
+            $description_attributes = ['class' => 'description property-name'];
+            if (isset($attributes['id'])) {
+                $description_attributes['id'] = "{$attributes['id']}-description";
+            }
+            $description = new Element('pre', $description_attributes, $attributes['id']);
+            parent::__construct($input, $description ?? null);
+            return;
+        }
+
         parent::__construct($input, $description);
     }
 }

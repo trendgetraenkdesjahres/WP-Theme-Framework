@@ -3,6 +3,7 @@
 namespace WP_Framework\Model\Property;
 
 use WP_Framework\Database\SQLSyntax;
+use WP_Framework\Element\Input\FormControlElement;
 
 class Property
 {
@@ -36,6 +37,71 @@ class Property
 
         # add NOT NULL value (no checks)
         $this->nullable = $nullable ? '' : 'NOT NULL';
+    }
+
+    public function get_value(?int $object_id = null): mixed
+    {
+        return $object_id;
+    }
+
+    public function get_form_control_element($value): FormControlElement
+    {
+        $matches = [];
+        preg_match(
+            pattern: '/^(\w+)(\(\d+\))?/',
+            subject: $this->sql_type,
+            matches: $matches
+        );
+        $type = $matches[1];
+        $length = isset($matches[2]) ? trim($matches[2], '()') : null;
+
+        $tag_name = '';
+        $tag_attributes = ['id' => $this->key];
+        $tag_attributes['value'] = $value;
+
+        switch ($type) {
+            case 'bigint':
+                $tag_name = 'input';
+                $tag_attributes['type'] = 'number';
+                break;
+
+            case 'int':
+                $tag_name = 'input';
+                $tag_attributes['type'] = 'number';
+                break;
+
+            case 'datetime':
+                $tag_name = 'input';
+                $tag_attributes['type'] = 'datetime-local';
+                break;
+
+            case 'text':
+                $tag_name = 'textarea';
+                break;
+
+            case 'tinytext':
+                $tag_name = 'input';
+                $tag_attributes['type'] = 'text';
+                break;
+
+            case 'varchar':
+                if ($length && $length > 80) {
+                    $tag_name = 'textarea';
+                    $tag_attributes['maxlength'] = $length;
+                    break;
+                }
+                if ($length) {
+                    $tag_name = 'input';
+                    $tag_attributes['type'] = 'text';
+                    $tag_attributes['maxlength'] = $length;
+                    break;
+                }
+                $tag_name = 'input';
+                $tag_attributes['type'] = 'text';
+                break;
+        }
+
+        return new FormControlElement($tag_name, $tag_attributes, '');
     }
 
     public function __toString()
