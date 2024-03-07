@@ -2,6 +2,8 @@
 
 namespace WP_Framework\AdminPanel;
 
+use WP_Framework\Debug\Debug;
+
 abstract class AbstractPanel
 {
     public string $name;

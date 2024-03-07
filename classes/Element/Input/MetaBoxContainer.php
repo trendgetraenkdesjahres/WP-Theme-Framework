@@ -6,7 +6,7 @@ use WP_Framework\Element\Element;
 
 class MetaBoxContainer extends Element
 {
-    public function __construct(public string $model_name, private object $object)
+    public function __construct(public string $model_name, private ?object $object)
     {
         parent::__construct('div', ['id' => 'meta-box-container']);
     }

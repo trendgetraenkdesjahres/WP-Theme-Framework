@@ -6,6 +6,7 @@ use WP_Framework\AdminPanel\AbstractPanel;
 use WP_Framework\AdminPanel\CustomModelPanel;
 use WP_Framework\CLI\CLI;
 use WP_Framework\Database\Database;
+use WP_Framework\Debug\Debug;
 use WP_Framework\Model\AbstractModel;
 use WP_Framework\Model\BuildinModel;
 use WP_Framework\Model\CustomModel;
@@ -54,6 +55,11 @@ class Framework
          */
         if ($this->cli) {
             $this->cli->register_command('migrate_all', [$this->database, 'migrate_registered_models']);
+        }
+
+        # wrap this into WB_DEBUG const
+        if (true) {
+            Debug::init();
         }
         return $this;
     }
