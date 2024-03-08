@@ -2,6 +2,7 @@
 
 namespace WP_Framework\Database;
 
+use WP_Framework\Debug\Debug;
 use WP_Framework\Model\CustomModel;
 
 class SQLSyntax
@@ -39,6 +40,7 @@ class SQLSyntax
      */
     public static function data_type(string $type): bool
     {
+        Debug::var($type);
         return (bool) preg_match(
             pattern: '/^(bigint\((\d+)\)|varchar\((\d+)\)|int\((\d+)\)|text|tinytext|datetime)\s*(unsigned)?$/',
             subject: $type

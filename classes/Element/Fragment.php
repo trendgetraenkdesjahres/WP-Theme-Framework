@@ -20,7 +20,7 @@ class Fragment extends AbstractElement
     public function __construct(Element|string|null ...$content)
     {
         # init
-        $this->dom = new DOMDocument();
+        $this->dom = new DOMDocument();;
 
         # create fragment
         $this->node = $this->dom->createDocumentFragment();

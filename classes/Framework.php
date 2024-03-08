@@ -142,6 +142,7 @@ class Framework
                 array_push($models, $model);
             }
         }
+
         return $models;
     }
 
