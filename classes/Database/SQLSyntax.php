@@ -40,7 +40,6 @@ class SQLSyntax
      */
     public static function data_type(string $type): bool
     {
-        Debug::var($type);
         return (bool) preg_match(
             pattern: '/^(bigint\((\d+)\)|varchar\((\d+)\)|int\((\d+)\)|text|tinytext|datetime)\s*(unsigned)?$/',
             subject: $type
