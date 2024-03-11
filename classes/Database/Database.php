@@ -42,7 +42,7 @@ class Database
             $query .= QueryString::create_table($model);
 
             # get the model's meta-table query
-            if ($model->has_meta) {
+            if ($model->meta) {
                 $query .= QueryString::create_meta_table($model);
             }
         }

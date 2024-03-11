@@ -2,36 +2,7 @@
 
 namespace WP_Framework\Model\Meta;
 
-use DOMDocument;
-use WP_Framework\Debug\Debug;
 use WP_Framework\Element\Input\FormControlElement;
-
-/**
- * Interface for custom meta fields in WordPress.
- */
-interface MetaInterface
-{
-    /**
-     * Registers the model's meta field.
-     *
-     * @return MetaInterface The current instance of PostMeta.
-     */
-    public function register(): MetaInterface;
-
-    /**
-     * Unregisters the models's meta field.
-     *
-     * @return MetaInterface The modified PostType instance.
-     */
-    public function unregister(): MetaInterface;
-
-    /**
-     * Check if the models's meta is registered.
-     *
-     * @return bool True if the post type is registered, false otherwise.
-     */
-    public function is_registered(): bool;
-}
 
 /**
  * Abstract class for creating custom meta fields in WordPress.
@@ -41,18 +12,25 @@ abstract class AbstractMeta
     /**
      * The unique key for the meta field.
      */
-    protected string $meta_key;
+    public string $key;
 
     /**
-     * The internal title of the meta field.
+     * The title of the meta field.
      */
     public string $name;
+
+
+    public array $edit_hooks;
+
+    public array $save_hooks;
+
+    public string $type;
 
 
     /**
      * The type of data associated with this meta key.
      */
-    protected string $description;
+    public string $description;
 
     /**
      * The position to display the input field (side, normal, advanced).
@@ -73,7 +51,7 @@ abstract class AbstractMeta
      * The options for the meta field, with defaults
      * @link https://developer.wordpress.org/reference/functions/register_meta/#parameters
      */
-    protected array $options = [];
+    public array $options = [];
 
     /**
      * Create a new Meta instance.
@@ -96,19 +74,17 @@ abstract class AbstractMeta
         protected string $display_position = 'side'
     ) {
         $this->name = sanitize_title($title);
-        $this->meta_key = sanitize_title(get_stylesheet() . "-$this->name");
+        $this->key = sanitize_title(get_stylesheet() . "-$this->name");
         $this->description = esc_xml($description);
 
-        $this->input_field_nonce_name = "{$this->meta_key}_nonce";
-        $this->input_field_action_name = "{$this->meta_key}_action";
+        $this->input_field_nonce_name = "{$this->key}_nonce";
+        $this->input_field_action_name = "{$this->key}_action";
 
         $this->input_field_position = str_validate($display_position, 'side', 'normal', 'advanced');
     }
 
-    public function get_meta_type(): string
-    {
-        return 'abstract ( :-0 ) abstract';
-    }
+    abstract public function get_save_callback(): callable;
+    abstract public function get_edit_callback(): callable;
 
     /**
      * Creates a number input meta field.
@@ -287,7 +263,7 @@ abstract class AbstractMeta
      */
     public function get_current_value(int $object_id, string $object_type): mixed
     {
-        $value = get_metadata($object_type, $object_id, $this->meta_key, true);
+        $value = get_metadata($object_type, $object_id, $this->key, true);
         return $this->cast_to_data_type($value);
     }
 
@@ -303,9 +279,9 @@ abstract class AbstractMeta
         $input_field = new FormControlElement(
             tag_name: $this->input_element_tag_name,
             attributes: [
-                'id' => $this->meta_key,
+                'id' => $this->key,
                 'value' => $value,
-                'name' => $this->meta_key
+                'name' => $this->key
             ],
             description: $this->description,
             options: $this->input_element_options

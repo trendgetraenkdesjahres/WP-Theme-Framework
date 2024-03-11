@@ -2,119 +2,68 @@
 
 namespace WP_Framework\Model\Type;
 
-use WP_Framework\Model\Type\Meta\AbstractMeta;
-use WP_Framework\Model\Type\Meta\MetaInterface;
-use WP_Framework\Utils\JsonFile;
+use WP_Framework\Database\SQLSyntax;
+use WP_Framework\Model\AbstractModel;
+use WP_Framework\Model\Meta\AbstractMeta;
 
 /**
- * Interface for object type (post, term, user, comment, ...) fields in WordPress.
+ * Handles a model type. a model type is a variation of a model.
+ * it has the same properties (table columns) as a model, but not the same values, not the same meta and can be displayed differently.
+ * for example 'page' and 'attachement' of posttype, 'categorie' and 'tag' of termtype/taxonomy are WordPress build-in models.
  */
-interface TypeInterface
+abstract class AbstractType extends AbstractModel
 {
     /**
-     * Register a custom object type with WordPress.
-     *
-     * @return TypeInterface The modified Type instance.
+     * The Internal name of the type.
      */
-    public function register(): TypeInterface;
+    public string $name;
 
-    /**
-     * Unregister the custom object type.
-     * Cannot be used to unregister built-in post types, use PostType->hide() instead.
-     *
-     * @return TypeInterface The modified PostType instance.
-     */
-    public function unregister(): TypeInterface;
-
-    /**
-     * Check if the custom object type is registered.
-     *
-     * @return bool True if the post type is registered, false otherwise.
-     */
-    public function is_registered(): bool;
-
-    /**
-     * Create instance from json data
-     *
-     * @return TypeInterface The Instace.
-     */
-    public static function create_from_json(string $path): TypeInterface;
-}
-
-/**
- * Handles a object type ('page' of posttype, 'categorie' of termtype/taxonomy, ...) in WordPress.
- */
-abstract class AbstractType
-{
-    /**
-     * Array to store meta fields in.
-     */
-    protected array $meta = [];
-
-    /**
-     * The name of the model this type is for.
-     */
-    protected string $model_name = 'abstract ( :-0 ) abstract';
-
-    /**
-     * Tag which is used for the hook in the "add_action" function to register this Type.
-     */
-    protected string $registration_tag = 'init';
-
-    public function __construct(public string $name, public array $props = [])
+    public function __construct(string $name, public array $props = [])
     {
+        if (!SQLSyntax::field_name($name)) {
+            throw new \Error("'$name' is not a valid type-name");
+        }
+        $this->name = $name;
     }
 
-    public static function create_from_json(string $path): TypeInterface
+    public function register_meta(AbstractMeta $meta): AbstractType
     {
-        $name = basename($path, '.json');
-        $class = get_called_class();
-        return new $class(
-            name: $name,
-            props: JsonFile::to_array($path)
-        );
-    }
+        #register
+        $options = array_merge($meta->options, [
+            'type' => $meta->type,
+            'description' => $meta->description,
+            'object_subtype' => $this->name
+        ]);
+        register_meta($this->name, $meta->key, $options);
 
-    /**
-     * Register custom meta fields for this model type.
-     *
-     * @param MetaInterface $meta The WP_Framework Meta object to register.
-     * @return AbstractType The modified AbstractType instance.
-     */
-    public function register_meta(MetaInterface $meta): AbstractType
-    {
-        $this->meta[$meta->name] = $meta->register($this->name);
+        # add meta input to 'edit' screens
+        foreach ($meta->edit_hooks as $edit_hook) {
+            add_action($edit_hook, $meta->get_edit_callback());
+        }
+
+        # add save-methods
+        foreach ($meta->save_hooks as $save_hook) {
+            add_action($save_hook, $meta->get_save_callback());
+        }
+        $this->meta[$meta->key] = $meta;
         return $this;
     }
 
-    /**
-     * Unregister custom meta fields for this model type.
-     *
-     * @param string|MetaInterface $meta The WP_Framework Meta object or a string (builtin Meta) to unregister.
-     * @return AbstractType The modified AbstractType instance.
-     */
-    public function unregister_meta(string|MetaInterface $meta): AbstractType
+    public function unregister_meta(AbstractMeta $meta): AbstractType
     {
-        if (is_string($meta)) {
-            unregister_meta_key($this->model_name, $meta, $this->name);
-            return $this;
-        }
-        $meta->unregister($this->model_name);
-        unset($this->meta[$meta->name]);
-        return $this;
-    }
+        # unregister
+        unregister_meta_key($this->name, $meta->key);
 
-    /**
-     * Get a meta object of this model type.
-     *
-     * @param string $name the (serialized) name of the meta.
-     * @return AbstractType The modified AbstractType instance.
-     */
-    public function get_meta(string $name): AbstractMeta
-    {
-        if (!isset($this->meta[$name])) {
-            throw new \Error("A {$this->model_name}-meta named '$name' is not registered");
+        # remove meta input from 'edit' screens
+        foreach ($meta->edit_hooks as $edit_hook) {
+            remove_action($edit_hook, $meta->get_edit_callback());
         }
-        return $this->meta[$name];
+
+        # remove save-methods
+        foreach ($meta->save_hooks as $save_hook) {
+            remove_action($save_hook, $meta->get_save_callback());
+        }
+        unset($this->meta[$meta->key]);
+        return $this;
     }
 }

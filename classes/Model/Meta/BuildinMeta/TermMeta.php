@@ -1,15 +1,20 @@
 <?php
 
-namespace WP_Framework\Model\Type\Meta;
+namespace WP_Framework\Model\Meta\Buildin;
 
+use WP_Framework\Model\Meta\AbstractMeta;
 use WP_Term;
 
-class TermMeta extends AbstractMeta implements MetaInterface
+class CommentMeta extends AbstractMeta
 {
-    public function get_meta_type(): string
-    {
-        return 'term';
-    }
+    public array $edit_hooks = [
+        'comment_form_logged_in_after',
+        'comment_form_after_fields',
+        'add_meta_boxes_comment'
+    ];
+    public array $save_hooks = [
+        'comment_post'
+    ];
 
     /**
      * Registers the term-type's meta field.

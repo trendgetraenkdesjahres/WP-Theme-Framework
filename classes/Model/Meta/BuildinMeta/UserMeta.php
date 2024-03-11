@@ -19,7 +19,7 @@ class UserMeta extends AbstractMeta implements MetaInterface
             'type' => 'string',
             'description' => $this->description
         ]);
-        register_meta('user', $this->meta_key, $options);
+        register_meta('user', $this->key, $options);
 
         # add meta input to 'edit' screens
         add_action('show_user_profile', $this->edit());
@@ -40,7 +40,7 @@ class UserMeta extends AbstractMeta implements MetaInterface
     public function unregister(): UserMeta
     {
         # unregister meta
-        unregister_meta_key('user', $this->meta_key);
+        unregister_meta_key('user', $this->key);
 
         # remove meta input from 'editor' screen
         remove_action('show_user_profile', $this->edit());
@@ -59,7 +59,7 @@ class UserMeta extends AbstractMeta implements MetaInterface
      */
     public function is_registered(): bool
     {
-        return registered_meta_key_exists('user', $this->meta_key);
+        return registered_meta_key_exists('user', $this->key);
     }
 
     /**
@@ -67,7 +67,7 @@ class UserMeta extends AbstractMeta implements MetaInterface
      *
      * @return callable The save function.
      */
-    private function save(): callable
+    public function get_save_callback(): callable
     {
         return function ($user_id) {
             if (!$this->is_saving_safe_and_secure($user_id, 'user')) {
@@ -75,8 +75,8 @@ class UserMeta extends AbstractMeta implements MetaInterface
             }
             update_user_meta(
                 user_id: $user_id,
-                meta_key: $this->meta_key,
-                meta_value: $this->cast_to_data_type($_POST[$this->meta_key])
+                meta_key: $this->key,
+                meta_value: $this->cast_to_data_type($_POST[$this->key])
             );
             return $user_id;
         };
@@ -87,7 +87,7 @@ class UserMeta extends AbstractMeta implements MetaInterface
      *
      * @return callable The save function.
      */
-    private function edit(): callable
+    public function get_edit_callback(): callable
     {
         return function ($user) {
             wp_nonce_field(
@@ -102,7 +102,7 @@ class UserMeta extends AbstractMeta implements MetaInterface
                 $input_field_value = $this->get_current_value($user->ID, 'user');
             }
             echo "<table class='form-table'><tr>\n
-            <th><label for='{$this->meta_key}'>{$this->name}</label></th>\n
+            <th><label for='{$this->key}'>{$this->name}</label></th>\n
 			<td>" . $this->get_valid_input_field($input_field_value) . "</td>\n
 		    </tr></table>";
         };

@@ -2,11 +2,12 @@
 
 namespace WP_Framework\Model;
 
-use WP_Framework\AdminPanel\Table\AbstractTable;
 use WP_Framework\AdminPanel\Table\CustomModelTable;
 use WP_Framework\Database\Database;
 use WP_Framework\Database\SQLSyntax;
 use WP_Framework\Model\Property\Property;
+use WP_Framework\Model\Type\AbstractType;
+use WP_Framework\Model\Type\CustomType;
 
 /**
  * DataModel is the class to implement custom models.
@@ -15,16 +16,6 @@ use WP_Framework\Model\Property\Property;
  */
 class CustomModel extends AbstractModel
 {
-    /**
-     * @var string|null The class name for data types.
-     */
-    public ?string $type_class = 'DataType';
-
-    /**
-     * @var string|null The folder containing JSON files for data types.
-     */
-    public ?string $types_json_folder = null;
-
     /**
      * @var string The name of the table.
      */
@@ -41,6 +32,11 @@ class CustomModel extends AbstractModel
     public array $properties = [];
 
     /**
+     * Array to store types in. Null if this does not support types.
+     */
+    public ?array $types = null;
+
+    /**
      * @var array An array to store properties eligible for composite indexing.
      */
     public array $composite_index_properties = [];
@@ -55,7 +51,7 @@ class CustomModel extends AbstractModel
      * @param bool        $is_hierarchical Indicates whether the model is hierarchical (objects have parents).
      * @param string|null $owner_type      The type of owner (e.g., 'author' or 'user').
      */
-    public  function __construct(public string $name, public ?string $plural_name = null, public bool $has_meta = false, public bool $has_types = false, public bool $is_hierarchical = false, public ?string $owner_type = null)
+    public  function __construct(public string $name, public ?string $plural_name = null, bool $has_meta = false, bool $has_types = false, public bool $is_hierarchical = false, public ?string $owner_type = null)
     {
         $this->sanitized_name = sanitize_key($name);
         $this->table_name = Database::$table_prefix . "_" . $this->sanitized_name;
@@ -68,7 +64,15 @@ class CustomModel extends AbstractModel
         }
         $this->plural_name = $plural_name;
 
-        if ($this->has_types) {
+        if ($has_meta) {
+            $this->meta = [];
+        }
+
+        if ($has_types) {
+            # set types to array to indicate type-support
+            $this->types = [];
+
+            # add 'type' property
             $type_property = new Property(
                 key: 'type',
                 sql_type: 'varchar(20)',
@@ -128,21 +132,26 @@ class CustomModel extends AbstractModel
         return $this->panel_table;
     }
 
-
-    public function register()
+    public function register_type(CustomType $type): CustomModel
     {
-        /*
-        - add to menu
-        - add a screen
-        - add an editor
-         */
+        if ($this->types === null) {
+            throw new \Error("This Model '$this->name' does not support types.");
+        }
+        $this->types[$type->name] = $type;
+        return $this;
     }
 
-    public function unregister()
+    public function unregister_type(string|CustomType $type): CustomModel
     {
+        unset($this->types[$type->name]);
+        return $this;
     }
 
-    public function is_registered()
+    public function get_type(string $name): AbstractType
     {
+        if (!$this->types || !isset($this->types[$name])) {
+            throw new \Error("A {$this->name}-type named '$name' is not registered");
+        }
+        return $this->types[$name];
     }
 }

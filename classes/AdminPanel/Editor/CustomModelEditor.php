@@ -14,7 +14,7 @@ class CustomModelEditor extends Editor
             name: $model->sanitized_name,
             action: 'post.php',
             object: $object,
-            meta_sidebar: $model->has_meta
+            meta_sidebar: ($model->meta === false ? false : true)
         );
         $this->add_property(...$model->get_properties());
     }
