@@ -3,13 +3,11 @@
 namespace WP_Framework;
 
 use WP_Framework\AdminPanel\AbstractPanel;
-use WP_Framework\AdminPanel\CustomModelPanel;
 use WP_Framework\CLI\CLI;
 use WP_Framework\Database\Database;
 use WP_Framework\Debug\Debug;
 use WP_Framework\Model\AbstractModel;
 use WP_Framework\Model\BuildinModel;
-use WP_Framework\Model\CustomModel;
 
 class Framework
 {
@@ -100,7 +98,6 @@ class Framework
     public function register_model(AbstractModel ...$model): Framework
     {
         foreach ($model as $model) {
-            $model->register_types_from_folder();
             $this->models[$model->name] = $model;
         }
         return $this;
@@ -108,10 +105,18 @@ class Framework
 
     private function register_buildin_models(): Framework
     {
-        $this->register_model(new BuildinModel('comment'));
-        $this->register_model(new BuildinModel('post', 'PostType', 'post-types', true));
-        $this->register_model(new BuildinModel('term', 'Taxonomy', 'taxonomies', true));
-        $this->register_model(new BuildinModel('user'));
+        $comment_model =  new BuildinModel('comment');
+
+        $user_model = new BuildinModel('user');
+
+        $post_model = new BuildinModel('post', supports_types: true);
+        $post_model->register_types_from_folder('post-types');
+
+        $term_model = new BuildinModel('term', supports_types: true);
+        $term_model->register_types_from_folder('taxonomies');
+
+        $this->register_model($comment_model, $user_model, $post_model, $term_model);
+
         return $this;
     }
 

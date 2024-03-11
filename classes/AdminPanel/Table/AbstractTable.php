@@ -38,7 +38,7 @@ abstract class AbstractTable extends WP_List_Table
 
     public function bind_to_database_table(string $table_name): AbstractTable
     {
-        if (!SQLSyntax::field_name($table_name)) {
+        if (!SQLSyntax::is_field_name($table_name)) {
             throw new \Error("'$table_name' is not a sql table name.");
         }
         $this->database_table = $table_name;

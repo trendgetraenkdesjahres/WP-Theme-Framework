@@ -19,36 +19,43 @@ abstract class AbstractMeta
      */
     public string $name;
 
-
-    public array $edit_hooks;
-
-    public array $save_hooks;
-
-    public string $type;
-
+    /**
+     * @var array The hooks used for editing the meta field.
+     */
+    protected array $edit_hooks;
 
     /**
-     * The type of data associated with this meta key.
+     * @var array The hooks used for saving the meta field.
+     */
+    protected array $save_hooks;
+
+    /**
+     * @var string The type of the meta field (e.g., 'string').
+     */
+    public string $type = 'string';
+
+    /**
+     * @var string The description of the meta field.
      */
     public string $description;
 
     /**
-     * The position to display the input field (side, normal, advanced).
+     * @var string The position to display the input field (side, normal, advanced).
      */
     protected string $input_field_position;
 
     /**
-     * The nonce name for the input field.
+     * @var string The nonce name for the input field.
      */
     protected string $input_field_nonce_name;
 
     /**
-     * The action name for the input field.
+     * @var string The action name for the input field.
      */
     protected string $input_field_action_name;
 
     /**
-     * The options for the meta field, with defaults
+     * @var array The options for the meta field, with defaults.
      * @link https://developer.wordpress.org/reference/functions/register_meta/#parameters
      */
     public array $options = [];
@@ -83,8 +90,21 @@ abstract class AbstractMeta
         $this->input_field_position = str_validate($display_position, 'side', 'normal', 'advanced');
     }
 
-    abstract public function get_save_callback(): callable;
-    abstract public function get_edit_callback(): callable;
+    /**
+     * Get the save callback function for the meta field.
+     *
+     * @param string $model The model associated with the meta field.
+     * @return callable The save callback function.
+     */
+    abstract public function get_save_callback(string $model): callable;
+
+    /**
+     * Get the edit callback function for the meta field.
+     *
+     * @param string|null $model_type The type of the model associated with the meta field.
+     * @return callable The edit callback function.
+     */
+    abstract public function get_edit_callback(?string $model_type = null): callable;
 
     /**
      * Creates a number input meta field.
@@ -92,9 +112,9 @@ abstract class AbstractMeta
      * @param string $meta_name The name of the meta field.
      * @param string $description The description of the meta field.
      * @param array $attributes Additional attributes for the input element.
-     * @return MetaInterface The created meta field.
+     * @return AbstractMeta The created meta field.
      */
-    public static function create_number(string $meta_name, string $description, string|array $assign_to_type, array $attributes = []): MetaInterface
+    public static function create_number(string $meta_name, string $description, string|array $assign_to_type, array $attributes = []): AbstractMeta
     {
         $meta_class = get_called_class();
         return new $meta_class(
@@ -111,10 +131,10 @@ abstract class AbstractMeta
      * @param string $meta_name The name of the meta field.
      * @param string $description The description of the meta field.
      * @param array $attributes Attributes for the input element. 'min' and 'max' are required.
-     * @return MetaInterface The created meta field.
+     * @return AbstractMeta The created meta field.
      * @throws \Error If 'min' and 'max' attributes are not provided.
      */
-    public static function create_number_range(string $meta_name, string $description, array $attributes): MetaInterface
+    public static function create_number_range(string $meta_name, string $description, array $attributes): AbstractMeta
     {
         if (!isset($attributes['min']) || !isset($attributes['min'])) {
             throw new \Error("'min' and 'max' attributes are necessary.");
@@ -134,9 +154,9 @@ abstract class AbstractMeta
      * @param string $meta_name The name of the meta field.
      * @param string $description The description of the meta field.
      * @param array $attributes Additional attributes for the input element. 'maxlength' is recommended.
-     * @return MetaInterface The created meta field.
+     * @return AbstractMeta The created meta field.
      */
-    public static function create_text(string $meta_name, string $description, array $attributes = []): MetaInterface
+    public static function create_text(string $meta_name, string $description, array $attributes = []): AbstractMeta
     {
         $meta_class = get_called_class();
         return new $meta_class(
@@ -153,9 +173,9 @@ abstract class AbstractMeta
      * @param string $meta_name The name of the meta field.
      * @param string $description The description of the meta field.
      * @param array $attributes Additional attributes for the input element. 'rows' and 'cols' are recommended.
-     * @return MetaInterface The created meta field.
+     * @return AbstractMeta The created meta field.
      */
-    public static function create_text_multiline(string $meta_name, string $description, array $attributes = []): MetaInterface
+    public static function create_text_multiline(string $meta_name, string $description, array $attributes = []): AbstractMeta
     {
         $meta_class = get_called_class();
         return new $meta_class(
@@ -173,9 +193,9 @@ abstract class AbstractMeta
      * @param string $description The description of the meta field.
      * @param array $options The options for select input elements.
      * @param array $attributes Additional attributes for the input element.
-     * @return MetaInterface The created options meta field.
+     * @return AbstractMeta The created options meta field.
      */
-    public static function create_options(string $meta_name, string $description, array $options, array $attributes = []): MetaInterface
+    public static function create_options(string $meta_name, string $description, array $options, array $attributes = []): AbstractMeta
     {
         $meta_class = get_called_class();
         return new $meta_class(
@@ -194,9 +214,9 @@ abstract class AbstractMeta
      * @param string $meta_name The name of the meta field.
      * @param string $description The description of the meta field.
      * @param array $attributes Additional attributes for the checkbox input field.
-     * @return MetaInterface The created meta field instance.
+     * @return AbstractMeta The created meta field instance.
      */
-    public static function create_bool(string $meta_name, string $description, array $attributes = []): MetaInterface
+    public static function create_bool(string $meta_name, string $description, array $attributes = []): AbstractMeta
     {
         $meta_class = get_called_class();
         return new $meta_class(
@@ -208,9 +228,14 @@ abstract class AbstractMeta
     }
 
     /**
-     * Set options for the meta field
+     * Set options for the meta field.
      * 'object_subtype', 'type', 'string', 'description' are set by the class.
      * @link https://developer.wordpress.org/reference/functions/register_meta/#parameters
+     *
+     * @param string $option The option to set.
+     * @param mixed $value The value to set for the option.
+     * @return AbstractMeta The current instance for method chaining.
+     * @throws \Error If the provided option is not valid.
      */
     public function set_option(string $option, $value): AbstractMeta
     {
@@ -219,6 +244,11 @@ abstract class AbstractMeta
         return $this;
     }
 
+    /**
+     * Get the data type associated with the meta field.
+     *
+     * @return string The data type (e.g., 'string', 'integer', 'bool').
+     */
     public function get_data_type(): string
     {
         if ($this->input_element_tag_name == 'textarea') {
@@ -242,6 +272,12 @@ abstract class AbstractMeta
         }
     }
 
+    /**
+     * Cast a variable to the data type associated with the meta field.
+     *
+     * @param mixed $var The variable to cast.
+     * @return string|int|bool The casted value.
+     */
     protected function cast_to_data_type(mixed $var): string|int|bool
     {
         switch ($this->get_data_type()) {
@@ -258,7 +294,7 @@ abstract class AbstractMeta
      * Get the current value of the meta field for a given object.
      *
      * @param int $object_id The ID of the object.
-     * @param callable $get_method The method to retrieve the meta value (e.G. 'get_post_meta()').
+     * @param string $object_type The type of the object.
      * @return mixed The current value of the meta field.
      */
     public function get_current_value(int $object_id, string $object_type): mixed
@@ -273,15 +309,15 @@ abstract class AbstractMeta
      * @param mixed $value Optional. The value to be displayed in the input field.
      * @return string The HTML representation of the input field.
      */
-    # RENAME ME
-    protected function get_valid_input_field(mixed $value = ''): string
+    protected function get_form_control(mixed $value = ''): string
     {
         $input_field = new FormControlElement(
             tag_name: $this->input_element_tag_name,
-            attributes: [
+            attributes: $this->input_element_attributes + [
                 'id' => $this->key,
                 'value' => $value,
-                'name' => $this->key
+                'name' => $this->key,
+                'type' => $this->input_element_type
             ],
             description: $this->description,
             options: $this->input_element_options
@@ -289,17 +325,38 @@ abstract class AbstractMeta
         return (string) $input_field;
     }
 
+    /**
+     * Get the hooks used for saving the meta field.
+     *
+     * @param string|null $model_type The type of the model associated with the meta field.
+     * @return array The array of hooks used for saving the meta field.
+     */
+    public function get_save_hooks(?string $model_type = null): array
+    {
+        return $this->save_hooks;
+    }
+
+    /**
+     * Get the hooks used for editing the meta field.
+     *
+     * @param string|null $model_type The type of the model associated with the meta field.
+     * @return array The array of hooks used for editing the meta field.
+     */
+    public function get_edit_hooks(?string $model_type = null): array
+    {
+        return $this->edit_hooks;
+    }
 
     /**
      * Check if saving is safe and the nonce is verified.
      *
      * @param int $object_id    The ID of the object.
-     * @param string $object_type The type of the object.
+     * @param string $model_type The name of the object's model.
      * @return bool True if saving is safe and secure, false otherwise.
      */
-    protected function is_saving_safe_and_secure(int $object_id, string $object_type)
+    protected function is_saving_safe_and_secure(int $object_id, string $model)
     {
-        if (!self::is_safe_to_save($object_id, 'post')) {
+        if (!self::is_safe_to_save($object_id, $model)) {
             return false;
         }
         return $this->is_nonce_verified();
@@ -309,16 +366,16 @@ abstract class AbstractMeta
      * Validate if it's safe to save the meta field.
      *
      * @param int $object_id The ID of the object.
-     * @param string $class The class of the object.
+     * @param string $model_type The name of the object's model.
      * @return bool True if it's safe to save, false otherwise.
      */
-    private static function is_safe_to_save(int $object_id, string $object_type): bool
+    private static function is_safe_to_save(int $object_id, string $model): bool
     {
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
             return false;
         }
 
-        if (!current_user_can("edit_{$object_type}", $object_id)) {
+        if (!current_user_can("edit_{$model}", $object_id)) {
             return false;
         }
 

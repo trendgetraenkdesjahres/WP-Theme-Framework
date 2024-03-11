@@ -62,7 +62,6 @@ foreach ($custom_block_folders as $custom_block_folder) {
     add_action('init', [$custom_block, 'register']);
 }
 
-
 $custom_blocks_script = new ScriptAsset(
     path: "assets/js/custom-block/register.js",
     handle: 'custom-blocks',

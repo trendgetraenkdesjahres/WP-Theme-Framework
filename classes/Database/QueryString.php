@@ -13,7 +13,7 @@ class QueryString
      */
     public static function create_table(CustomModel $model): string
     {
-        $meta_table_name = $model->get_custom_model_table_name();
+        $meta_table_name = $model->get_table_name();
 
         # go
         $query = "CREATE TABLE $meta_table_name (";
@@ -52,7 +52,7 @@ class QueryString
     public static function create_meta_table(CustomModel $model): string
     {
         $max_index_length = 19; # is defined in wp_get_db_schema
-        $meta_table_name = $model->get_custom_model_meta_table_name();
+        $meta_table_name = $model->get_meta_table_name();
 
         # go
         $query = "CREATE TABLE $meta_table_name (";

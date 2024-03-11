@@ -144,8 +144,8 @@ class Debug
             self::$instance = new self();
         }
         # register custom error display, disable phps error displaying.
-        ini_set('display_errors', 0);
-        add_filter('wp_die_handler', [self::$instance, 'wp_die_filter']);
+        /*         ini_set('display_errors', 0);
+        add_filter('wp_die_handler', [self::$instance, 'wp_die_filter']); */
         return self::$instance;
     }
 

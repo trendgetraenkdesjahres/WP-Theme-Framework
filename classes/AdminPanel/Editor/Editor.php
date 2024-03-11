@@ -50,7 +50,7 @@ class Editor
                 ]));
                 continue;
             }
-            array_push($this->fields, $property->get_form_control_element($value));
+            array_push($this->fields, $property->get_form_control($value));
         }
     }
 

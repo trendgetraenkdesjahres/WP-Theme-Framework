@@ -69,4 +69,16 @@ class FormControlElement extends Fragment
 
         parent::__construct($input, $description);
     }
+
+    public function set_value(mixed $value): FormControlElement
+    {
+        $this->attributes['value'] = $value;
+        return $this;
+    }
+
+    public function set_id(string $form_id): FormControlElement
+    {
+        $this->attributes['id'] = $form_id;
+        return $this;
+    }
 }
