@@ -6,12 +6,12 @@ Adds the custom taxonomies, define in the taxonomies/ folder.
 put .json files there, with properties as in [WP_Taxonomy](https://developer.wordpress.org/reference/functions/register_taxonomy/)
 
 ## todo
-- [ ] models/types/meta loswerden
+- [x] models/types/meta loswerden
 - [ ] editor zuende
-- [ ] customobject klasse einfügen 
+- [ ] customobject klasse einfügen
 - [ ] kombabilität mit builtin durchweg
 - [ ] utils einsortieren
 - [ ] kommentieren
 - [ ] readme
-- [ ] 
-- [ ] 
+- [ ]
+- [ ]
