@@ -27,7 +27,7 @@ class QueryString
         }
 
         # add hirarchie key
-        if ($model->is_hierarchical) {
+        if ($model->get_attribute('hierarchical', false)) {
             $query .= "{$model->sanitized_name}_parent bigint(20) unsigned NOT NULL default '0',KEY {$model->sanitized_name}_parent ({$model->sanitized_name}_parent),";
         }
 

@@ -33,27 +33,26 @@ class CustomModel extends AbstractModel
     public string $table_name;
 
     /**
-     * @var string The internal name of the model.
-     */
-    public string $sanitized_name;
-
-    /**
      * DataModel constructor.
      * Set to private, to disable usage with 'new'.
      *
-     * @param string      $name           The name of the data model.
-     * @param string|null $plural_name    The plural form of the name (optional).
-     * @param bool        $supports_meta  Indicates whether the model has meta data.
-     * @param bool        $supports_types Indicates whether the model has types.
-     * @param bool        $is_hierarchical Indicates whether the model is hierarchical (objects have parents).
-     * @param string|null $owner_type     The type of owner (e.g., 'author' or 'user').
+     * @param string      $name               The name of the data model.
+     * @param string|null $plural_name        The plural form of the name (optional).
+     * @param bool        $supports_meta      Indicates whether the model has meta data.
+     * @param bool        $supports_types     Indicates whether the model has types.
+     * @param bool        $supports_hierarchy Indicates whether the model is hierarchical (objects have parents).
+     * @param string|null $owner_type         The type of owner (e.g., 'author' or 'user').
      */
-    public  function __construct(public string $name, public ?string $plural_name = null, bool $supports_meta = false, bool $supports_types = false, public bool $is_hierarchical = false, public ?string $owner_type = null)
+    public  function __construct(public string $name, public ?string $plural_name = null, bool $supports_meta = false, bool $supports_types = false, bool $supports_hierarchy = false, public ?string $owner_type = null)
     {
         $this->set_names($name, $plural_name);
 
         if ($supports_meta) {
             $this->meta = [];
+        }
+
+        if ($supports_hierarchy) {
+            $this->set_attribute('hierarchical', true);
         }
 
         if ($supports_types) {
@@ -102,7 +101,7 @@ class CustomModel extends AbstractModel
         if ($this->types === null) {
             throw new \Error("This Model '$this->name' does not support types.");
         }
-        $type->set_attribute('object_type', $this->name);
+        $type->_call_before_registration($this->name);
         return $this->add_type($type);
     }
 
@@ -273,6 +272,7 @@ class CustomModel extends AbstractModel
     private function set_names(string $name, ?string $plural_name = null): CustomModel
     {
         $this->sanitized_name = sanitize_key($name);
+        $this->set_label_attribute('singular_name', $name);
 
         $this->table_name = Database::$table_prefix . "_" . $this->sanitized_name;
         if (!SQLSyntax::is_field_name($this->table_name)) {
@@ -280,6 +280,7 @@ class CustomModel extends AbstractModel
         }
 
         $this->plural_name = $plural_name ? $plural_name : $name . 's';
+        $this->set_label_attribute('name', $this->plural_name);
         return $this;
     }
 

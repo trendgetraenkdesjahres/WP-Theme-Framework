@@ -25,6 +25,7 @@ class BuildinModel extends AbstractModel
      */
     public function __construct(public string $name, bool $supports_meta = true, bool $supports_types = false)
     {
+        $this->sanitized_name = $name;
         if ($supports_meta) {
             $this->meta = [];
         }

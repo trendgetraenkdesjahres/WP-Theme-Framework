@@ -28,6 +28,8 @@ trait ModelIntegrationTrait
         'show_in_menu',
         'show_in_nav_menus',
         'show_in_admin_bar',
+        'capability_type',
+        'object_type',
         'menu_position',
         'menu_icon',
         'map_meta_cap',
@@ -42,16 +44,17 @@ trait ModelIntegrationTrait
      * Get a WordPress trait attribute of this model/type.
      *
      * @param string $key   The attribute key.
+     * @param bool $throw_error   Throwing an error when unable to find attribute
      *
-     * @return mixed The attribute's value
+     * @return mixed The attribute's value, if throwing errors is of, the method will return 'null' if no value found.
      * @throws \Error If attribute is not set.
      */
-    public function get_attribute(string $key): mixed
+    public function get_attribute(string $key, bool $throw_error = true): mixed
     {
-        if (!isset($this->attributes[$key])) {
+        if ($throw_error && !isset($this->attributes[$key])) {
             throw new \Error("'$key' is not an attribute of this trait.");
         }
-        return $this->attributes[$key];
+        return isset($this->attributes[$key]) ? $this->attributes[$key] : null;
     }
 
     /**
@@ -70,10 +73,10 @@ trait ModelIntegrationTrait
      * @param string $key   The attribute key.
      * @param string $value The attribute value.
      *
-     * @return ModelIntegrationTrait $this
+     * @return self $this
      * @throws \Error If key is not supported.
      */
-    public function set_attribute(string $key, bool|int|string $value): ModelIntegrationTrait
+    public function set_attribute(string $key, bool|int|string $value): self
     {
         if (!in_array($key, self::$property_keys)) {
             throw new \Error("'$key' is not a supported value of this trait.");
@@ -88,9 +91,9 @@ trait ModelIntegrationTrait
      * @param string $key   The attribute key.
      * @param string $value The attribute value.
      *
-     * @return ModelIntegrationTrait $this
+     * @return self $this
      */
-    protected function _set_attribute(string $key, mixed $value): ModelIntegrationTrait
+    protected function _set_attribute(string $key, mixed $value): self
     {
         $this->attributes[$key] = $value;
         return $this;
@@ -102,9 +105,9 @@ trait ModelIntegrationTrait
      * @param string $key   The label key.
      * @param string $value The label value.
      *
-     * @return ModelIntegrationTrait $this
+     * @return self $this
      */
-    protected function set_label_attribute(string $key, string $value): ModelIntegrationTrait
+    protected function set_label_attribute(string $key, string $value): self
     {
         if (!isset($this->attributes['label'])) {
             $this->attributes['label'] = [];
@@ -127,7 +130,7 @@ trait ModelIntegrationTrait
      * @param string|null $not_found         Label for not finding model items.
      * @param string|null $not_found_in_trash Label for not finding model items in the trash.
      *
-     * @return ModelIntegrationTrait $this
+     * @return self $this
      */
     public function set_labels(
         ?string $add_new = null,
@@ -139,7 +142,7 @@ trait ModelIntegrationTrait
         ?string $search_items = null,
         ?string $not_found = null,
         ?string $not_found_in_trash = null
-    ): ModelIntegrationTrait {
+    ): self {
         if ($add_new) {
             $this->set_label_attribute('add_new', $add_new);
         }
@@ -183,7 +186,7 @@ trait ModelIntegrationTrait
      * @param int|null  $menu_position        The position in the admin menu.
      * @param string|null $menu_icon          The icon for the admin menu.
      *
-     * @return ModelIntegrationTrait $this
+     * @return self $this
      */
     public function set_visibility(
         ?bool $public = null,
@@ -195,7 +198,7 @@ trait ModelIntegrationTrait
         ?bool $show_in_admin_bar = null,
         ?int $menu_position = null,
         ?string $menu_icon = null
-    ): ModelIntegrationTrait {
+    ): self {
         if ($public) {
             $this->set_attribute('public', $public);
         }
@@ -231,9 +234,9 @@ trait ModelIntegrationTrait
      *
      * @param string ...$feature The features to add support for.
      *
-     * @return ModelIntegrationTrait $this
+     * @return self $this
      */
-    public function add_support_of(string ...$feature): ModelIntegrationTrait
+    public function add_support_of(string ...$feature): self
     {
         foreach ($feature as $i => $feature) {
             if ($feature == 'meta' && !$this->meta) {
@@ -254,9 +257,9 @@ trait ModelIntegrationTrait
      *
      * @param string ...$feature The features to remove support for.
      *
-     * @return ModelIntegrationTrait $this
+     * @return self $this
      */
-    public function remove_support_of(string ...$feature): ModelIntegrationTrait
+    public function remove_support_of(string ...$feature): self
     {
         foreach ($feature as $i => $feature) {
             if ($feature == 'meta' && $this->meta) {
@@ -280,9 +283,9 @@ trait ModelIntegrationTrait
      *
      * @param string ...$taxonomy The taxonomies to associate with the model.
      *
-     * @return ModelIntegrationTrait $this
+     * @return self $this
      */
-    public function set_taxonomies(string ...$taxonomy): ModelIntegrationTrait
+    public function set_taxonomies(string ...$taxonomy): self
     {
         return $this->_set_attribute('taxonomies', $taxonomy);
     }
@@ -292,24 +295,29 @@ trait ModelIntegrationTrait
      *
      * @param string $model_name The name of the model.
      *
-     * @return ModelIntegrationTrait $this
+     * @return self $this
      */
-    private function call_before_usage(string $model_name): ModelIntegrationTrait
+    public function _call_before_registration(string $model_name): self
     {
         return $this
+            ->set_attribute('object_type', $model_name)
             ->create_capability_properties($model_name)
             ->fill_properties_with_defaults();
     }
 
     /**
+     * capability_type
      * Create capability-related properties for the model/type.
      *
      * @param string $model_name The name of the model.
      *
-     * @return ModelIntegrationTrait $this
+     * @return self $this
      */
-    private function create_capability_properties(string $model_name): ModelIntegrationTrait
+    private function create_capability_properties(string $model_name): self
     {
+        if (!isset($this->attributes['capabilities'])) {
+            $this->attributes['capabilities'] = [];
+        }
         return $this
             ->set_attribute('capability_type', $model_name)
             ->_set_attribute('capabilities', [
@@ -326,9 +334,9 @@ trait ModelIntegrationTrait
     /**
      * Fill properties with default values before usage.
      *
-     * @return ModelIntegrationTrait $this
+     * @return self $this
      */
-    private function fill_properties_with_defaults(): ModelIntegrationTrait
+    private function fill_properties_with_defaults(): self
     {
         $this
             ->fill_label_properties_with_defaults()
@@ -352,20 +360,23 @@ trait ModelIntegrationTrait
     /**
      * Fill label properties with default values.
      *
-     * @return ModelIntegrationTrait $this
+     * @return self $this
      */
-    private function fill_label_properties_with_defaults(): ModelIntegrationTrait
+    private function fill_label_properties_with_defaults(): self
     {
+        if (!isset($this->attributes['label'])) {
+            $this->attributes['label'] = [];
+        }
         $label_defaults = [
             'add_new' => 'Add New',
             'add_new_item' => 'Add New ' . $this->attributes['label']['singular_name'],
             'edit_item' => 'Edit ' . $this->attributes['label']['singular_name'],
             'new_item' => 'New ' . $this->attributes['label']['singular_name'],
             'view_item' => 'View ' . $this->attributes['label']['singular_name'],
-            'view_items' => 'View ' . $this->attributes['label']['plural_name'],
-            'search_items' => 'Search ' . $this->attributes['label']['plural_name'],
-            'not_found' => 'No ' . $this->attributes['label']['plural_name'] . ' found',
-            'not_found_in_trash' => 'No ' . $this->attributes['label']['plural_name'] . ' found in trash',
+            'view_items' => 'View ' . $this->attributes['label']['name'],
+            'search_items' => 'Search ' . $this->attributes['label']['name'],
+            'not_found' => 'No ' . $this->attributes['label']['name'] . ' found',
+            'not_found_in_trash' => 'No ' . $this->attributes['label']['name'] . ' found in trash',
             'parent_item_colon' => 'Parent ' . $this->attributes['label']['singular_name'] . ':',
         ];
         $this->attributes['label'] = array_merge($label_defaults, $this->attributes['label']);
@@ -375,9 +386,9 @@ trait ModelIntegrationTrait
     /**
      * Fill visibility properties with default values.
      *
-     * @return ModelIntegrationTrait $this
+     * @return self $this
      */
-    private function fill_visibility_properties_with_defaults(): ModelIntegrationTrait
+    private function fill_visibility_properties_with_defaults(): self
     {
         $visibility_defaults = [
             "public" => true,

@@ -19,6 +19,11 @@ abstract class AbstractModel
     public string $name;
 
     /**
+     * @var string The internal name of the model.
+     */
+    public string $sanitized_name;
+
+    /**
      * Array to store meta fields. Null if the model does not support meta.
      *
      * @var array|null

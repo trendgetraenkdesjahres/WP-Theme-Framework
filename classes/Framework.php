@@ -8,6 +8,7 @@ use WP_Framework\Database\Database;
 use WP_Framework\Debug\Debug;
 use WP_Framework\Model\AbstractModel;
 use WP_Framework\Model\BuildinModel;
+use WP_Framework\Model\CustomModel;
 
 class Framework
 {
@@ -98,7 +99,10 @@ class Framework
     public function register_model(AbstractModel ...$model): Framework
     {
         foreach ($model as $model) {
-            $this->models[$model->name] = $model;
+            if ($model instanceof CustomModel) {
+                $model->_call_before_registration($model->sanitized_name);
+            }
+            $this->models[$model->sanitized_name] = $model;
         }
         return $this;
     }
