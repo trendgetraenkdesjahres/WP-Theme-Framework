@@ -32,3 +32,4 @@ $user_model->register_meta($book);
  - [ ] add custom meta
  - [ ] add custom types
  - [ ] add more factory methods
+ - [ ] add foreign key to custom model properties

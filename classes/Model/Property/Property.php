@@ -22,7 +22,7 @@ class Property
     /**
      * @var string|null The size associated with the SQL data type (e.g., varchar size).
      */
-    public string $sql_type_size;
+    public ?string $sql_type_size;
 
     /**
      * @var FormControlElement|null The form control element associated with the property. Will try to auto-build if null.
@@ -78,7 +78,7 @@ class Property
         if (!SQLSyntax::is_data_type($sql_type)) {
             throw new \Error("The SQL type '{$sql_type}' is illegal.");
         }
-        $type_info = SQLSyntax::get_type_info($this->sql_type);
+        $type_info = SQLSyntax::get_type_info($sql_type);
 
         $this->sql_type = $type_info['type'];
         $this->sql_type_size = $type_info['size'];
