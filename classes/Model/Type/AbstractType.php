@@ -2,9 +2,9 @@
 
 namespace WP_Framework\Model\Type;
 
-use WP_Framework\Database\SQLSyntax;
 use WP_Framework\Model\AbstractModel;
 use WP_Framework\Model\Meta\AbstractMeta;
+use WP_Framework\Model\ModelIntegrationTrait;
 
 /**
  * Handles a model type. A model type is a variation of a model.
@@ -13,29 +13,13 @@ use WP_Framework\Model\Meta\AbstractMeta;
  */
 abstract class AbstractType extends AbstractModel
 {
+    use ModelIntegrationTrait;
     /**
      * The internal name of the type.
      *
      * @var string
      */
     public string $name;
-
-    /**
-     * AbstractType constructor.
-     *
-     * @param string $name   The internal name of the type.
-     * @param array  $props  Additional properties for the type.
-     *                       E.g., ['label' => 'Custom Type', 'menu_icon' => 'dashicons-star-filled']
-     *
-     * @throws \Error If the provided type name is not a valid type name.
-     */
-    public function __construct(string $name, public array $props = [])
-    {
-        if (!SQLSyntax::is_field_name($name)) {
-            throw new \Error("'$name' is not a valid type-name");
-        }
-        $this->name = $name;
-    }
 
     /**
      * Creates options for registering meta fields.

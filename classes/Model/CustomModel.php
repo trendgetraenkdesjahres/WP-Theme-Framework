@@ -14,6 +14,7 @@ use WP_Framework\Model\Type\CustomType;
  */
 class CustomModel extends AbstractModel
 {
+    use ModelIntegrationTrait;
     /**
      * Array to store types. Null if custom Model does not support types.
      *
@@ -101,6 +102,7 @@ class CustomModel extends AbstractModel
         if ($this->types === null) {
             throw new \Error("This Model '$this->name' does not support types.");
         }
+        $type->set_attribute('object_type', $this->name);
         return $this->add_type($type);
     }
 

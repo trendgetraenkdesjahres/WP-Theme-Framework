@@ -2,6 +2,7 @@
 
 namespace WP_Framework\Model\Type;
 
+use WP_Framework\Database\SQLSyntax;
 use WP_Framework\Utils\JsonFile;
 
 /**
@@ -10,19 +11,35 @@ use WP_Framework\Utils\JsonFile;
 class BuildinType extends AbstractType
 {
     /**
+     * BuildinType constructor.
+     *
+     * @param string $name   The internal name of the type.
+     * @param array  $attributes  Attributes in WP Style for the type.
+     *
+     * @throws \Error If the provided type name is not a valid type name.
+     */
+    public function __construct(string $name, array $attributes = [])
+    {
+        if (!SQLSyntax::is_field_name($name)) {
+            throw new \Error("'$name' is not a valid type-name");
+        }
+        $this->name = $name;
+        $this->attributes = $attributes;
+    }
+
+    /**
      * Creates a BuildinType instance from a JSON file.
      *
      * @param string $path The path to the JSON file defining the type.
      *
-     * @return AbstractType The created BuildinType instance.
+     * @return BuildinType The created BuildinType instance.
      */
-    public static function create_from_json(string $path): AbstractType
+    public static function create_from_json(string $path): BuildinType
     {
         $name = basename($path, '.json');
-        $class = get_called_class();
-        return new $class(
+        return new BuildinType(
             name: $name,
-            props: JsonFile::to_array($path)
+            attributes: JsonFile::to_array($path)
         );
     }
 

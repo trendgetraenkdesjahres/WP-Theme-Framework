@@ -148,14 +148,14 @@ class BuildinModel extends AbstractModel
             if ($this->name == 'term') {
                 register_taxonomy(
                     $type->name,
-                    $type->props['object_type'],
-                    $type->props
+                    $type->get_attribute('object_type'),
+                    $type->get_attributes()
                 );
             } else {
                 call_user_func(
                     "register_{$this->name}_type",
                     $type->name,
-                    $type->props
+                    $type->get_attributes()
                 );
             }
         });
