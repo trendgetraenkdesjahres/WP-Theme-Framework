@@ -30,6 +30,7 @@ abstract class AbstractTable
         if ($success_on_cache) {
             return $row;
         }
+        # implement error checking
         $row = $this->select(
             where_clause: "{$this->id_column_name} = {$id}"
         );
