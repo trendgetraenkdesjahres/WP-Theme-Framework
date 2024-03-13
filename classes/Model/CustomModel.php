@@ -4,6 +4,9 @@ namespace WP_Framework\Model;
 
 use WP_Framework\Database\Database;
 use WP_Framework\Database\SQLSyntax;
+use WP_Framework\Database\Table;
+use WP_Framework\Database\Table\CustomTable;
+use WP_Framework\Model\Instance\CustomInstance;
 use WP_Framework\Model\Property\Property;
 use WP_Framework\Model\Type\CustomType;
 
@@ -33,6 +36,11 @@ class CustomModel extends AbstractModel
     public string $table_name;
 
     /**
+     * @var CustomTable The name database table.
+     */
+    private CustomTable $table;
+
+    /**
      * DataModel constructor.
      * Set to private, to disable usage with 'new'.
      *
@@ -58,6 +66,7 @@ class CustomModel extends AbstractModel
         if ($supports_types) {
             $this->initialize_types();
         }
+        $this->table = new CustomTable($this->table_name, "{$this->sanitized_name}_id");
     }
 
     /**
@@ -65,11 +74,15 @@ class CustomModel extends AbstractModel
      *
      * @param int $object_id The ID of the object.
      *
-     * @return object The built-in object instance.
+     * @return CustomInstance The CustomInstance instance.
      */
-    public function get_instance(int $object_id): object
+    public function get_instance(int $id): CustomInstance
     {
-        return new \stdClass();
+        $table_name = $this->get_table_name();
+
+        $instance = Database::get_table($table_name)->get_row($id);
+        wp_cache_add($id, $instance, $this->get_table_name());
+        return $instance;
     }
 
     /**

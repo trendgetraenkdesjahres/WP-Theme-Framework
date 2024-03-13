@@ -2,13 +2,16 @@
 
 namespace WP_Framework\Database;
 
+use WP_Framework\Database\Table\AbstractTable;
 use WP_Framework\Model\CustomModel;
 
 class Database
 {
     private static $instance;
+
     public static string $charset_collate;
     public static string $table_prefix = 'fw';
+    private array $tables = [];
 
     # Private constructor to prevent direct instantiation
     private function __construct()
@@ -23,6 +26,39 @@ class Database
             self::$instance::$charset_collate = $wpdb->get_charset_collate();
         }
         return self::$instance;
+    }
+
+    # is not checking for safe execution!! but's ok. the function calling this method should prepare the query...
+    public static function get_result(string $sql_query): QueryResult
+    {
+        global $wpdb;
+        $result_array = $wpdb->get_results(
+            query: $sql_query,
+            output: ARRAY_A
+        );
+        return new QueryResult($result_array);
+    }
+
+    public static function get_table(string $name): AbstractTable
+    {
+        return self::get_instance()->tables[$name];
+    }
+
+    public function register_table(AbstractTable ...$table): Database
+    {
+        foreach ($table as $table) {
+            $this->tables[$table->name] = $table;
+        }
+        return self::$instance;
+    }
+
+    public function unregister_table(string|AbstractTable $table): Database
+    {
+        if (!is_string($table)) {
+            $table = $table->name;
+        }
+        unset($this->tables[$table]);
+        return $this;
     }
 
     /**

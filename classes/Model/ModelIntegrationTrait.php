@@ -291,7 +291,7 @@ trait ModelIntegrationTrait
     }
 
     /**
-     * Execute actions before using the model.
+     * Execute me before using the model.
      *
      * @param string $model_name The name of the model.
      *

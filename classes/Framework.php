@@ -5,6 +5,7 @@ namespace WP_Framework;
 use WP_Framework\AdminPanel\AbstractPanel;
 use WP_Framework\CLI\CLI;
 use WP_Framework\Database\Database;
+use WP_Framework\Database\Table\CustomTable;
 use WP_Framework\Debug\Debug;
 use WP_Framework\Model\AbstractModel;
 use WP_Framework\Model\BuildinModel;
@@ -101,6 +102,8 @@ class Framework
         foreach ($model as $model) {
             if ($model instanceof CustomModel) {
                 $model->_call_before_registration($model->sanitized_name);
+                $table = new CustomTable();
+                $this->database->register_table($model->sanitized_name);
             }
             $this->models[$model->sanitized_name] = $model;
         }
