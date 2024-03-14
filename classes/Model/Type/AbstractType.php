@@ -21,16 +21,15 @@ abstract class AbstractType extends AbstractModel
      * @var string
      */
 
-    public function __construct(string $name, string $singular_name, string $plural_name, string $description = '', string ...$taxonomy)
+    public function __construct(string $model_name, string $singular_name, string $plural_name, string $description = '', string ...$taxonomy)
     {
-
         $this
-            ->set_names($name, $plural_name)
+            ->set_names($singular_name, $plural_name)
             ->set_attribute('description', $description)
             ->set_taxonomies(...$taxonomy)
             ->set_label_attribute('name', $plural_name)
             ->set_label_attribute('singular_name', $singular_name)
-            ->_init($this->name);
+            ->_init($model_name);
     }
 
     /**
@@ -40,13 +39,23 @@ abstract class AbstractType extends AbstractModel
      *
      * @return self The created AbstractType instance.
      */
-    public static function create_from_json(string $path): self
+    public static function create_from_json(string $path, ?string $model_name = null): self
     {
         # get the (sanitized) name from file name.
         $name = basename($path, '.json');
 
         # get the attributes.
         $attributes = JsonFile::to_array($path);
+
+        # set the model name / object type
+        if (!$model_name) {
+            if (!isset($attributes['object_type'])) {
+                throw new \Error("If the \$model_name parameter is unused,  the 'object_type' field in the json must be set.");
+            }
+            $object_type = $attributes['object_type'];
+        } else {
+            $object_type = $model_name;
+        }
 
         # set the fancy names
         $singular_name = isset($attributes['labels']['singular_name']) ?
@@ -57,7 +66,7 @@ abstract class AbstractType extends AbstractModel
         # get class name of AbstractType implementation for calling constructor.
         $this_class = get_called_class();
         $type = new $this_class(
-            name: $name,
+            model_name: $object_type,
             singular_name: $singular_name,
             plural_name: $plural_name
         );
@@ -81,5 +90,16 @@ abstract class AbstractType extends AbstractModel
             'description' => $meta->description,
             'object_subtype' => $this->attributes['object_type']
         ]);
+    }
+
+    /**
+     * Get the database table name for this types base model.
+     *
+     * @return string The database table name.
+     */
+    public function get_table_name(): string
+    {
+        throw new \Error('needs helps');
+        return "wp_{$this->name}s";
     }
 }

@@ -2,8 +2,7 @@
 
 namespace WP_Framework\Model\Property;
 
-use WP_Framework\Database\Database;
-use WP_Framework\Model\AbstractModel;
+use WP_Framework\Model\BuildinModel;
 use WP_Framework\Model\CustomModel;
 
 class ForeignProperty extends Property
@@ -12,10 +11,10 @@ class ForeignProperty extends Property
 
     public string $reference_id_column;
 
-    public function __construct(AbstractModel $referenced_model)
+    public function __construct(BuildinModel|CustomModel $referenced_model)
     {
-        $this->reference_table = Database::create_model_table_name($referenced_model->name);
-        $this->reference_id_column = "{$referenced_model->name}_id";
+        $this->reference_table = $referenced_model->get_table()->name;
+        $this->reference_id_column = $referenced_model->get_table()->id_column_name;
 
         # get fancy names
         if($referenced_model instanceof CustomModel) {

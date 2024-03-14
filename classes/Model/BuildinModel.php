@@ -2,6 +2,8 @@
 
 namespace WP_Framework\Model;
 
+use WP_Framework\Database\Database;
+use WP_Framework\Database\Table\BuildinTable;
 use WP_Framework\Model\Type\BuildinType;
 
 /**
@@ -97,7 +99,7 @@ class BuildinModel extends AbstractModel
                 continue;
             }
             $this->register_type(
-                BuildinType::create_from_json($model_type_file)
+                BuildinType::create_from_json($model_type_file, $this->name)
             );
         }
         return $this;
@@ -206,5 +208,15 @@ class BuildinModel extends AbstractModel
         }
         unset($this->types[$type]);
         return $this;
+    }
+
+    /**
+     * Get the database table name for the model.
+     *
+     * @return string The database table name.
+     */
+    public function get_table_name(): string
+    {
+        return "wp_{$this->name}s";
     }
 }

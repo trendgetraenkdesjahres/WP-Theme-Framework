@@ -3,12 +3,11 @@
 namespace WP_Framework\Database\Table;
 
 use WP_Framework\Database\Database;
-use WP_Framework\Database\QueryResult;
 use WP_Framework\Database\SQLSyntax;
 
 abstract class AbstractTable
 {
-    protected string $id_column_name;
+    public string $id_column_name;
 
     abstract protected function set_id_column_name(string $name): AbstractTable;
 

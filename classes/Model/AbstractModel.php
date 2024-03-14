@@ -2,6 +2,8 @@
 
 namespace WP_Framework\Model;
 
+use WP_Framework\Database\Database;
+use WP_Framework\Database\Table\AbstractTable;
 use WP_Framework\Model\Meta\AbstractMeta;
 
 /**
@@ -168,5 +170,20 @@ abstract class AbstractModel
         }
         unset($this->meta[$meta]);
         return $this;
+    }
+
+    
+    /**
+     * Get the database table name for the model.
+     *
+     * @return string The database table name.
+     */
+    abstract public function get_table_name(): string;
+
+    public function get_table(): AbstractTable
+    {
+        return Database::get_table(
+            $this->get_table_name()
+        );
     }
 }

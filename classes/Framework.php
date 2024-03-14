@@ -5,6 +5,7 @@ namespace WP_Framework;
 use WP_Framework\AdminPanel\AbstractPanel;
 use WP_Framework\CLI\CLI;
 use WP_Framework\Database\Database;
+use WP_Framework\Database\Table\BuildinTable;
 use WP_Framework\Database\Table\CustomTable;
 use WP_Framework\Debug\Debug;
 use WP_Framework\Model\AbstractModel;
@@ -101,10 +102,14 @@ class Framework
     {
         foreach ($model as $model) {
             # register data table of the custom model for interaction
-            if ($model instanceof CustomModel) {
+            if($model instanceof CustomModel) {
                 $table = new CustomTable($model->get_table_name());
-                $this->database->register_table($table);
+            } elseif ($model instanceof BuildinModel) {
+                $table = new BuildinTable($model->get_table_name());
+            } else {
+                throw new \Error('no table implemented for this model class.');
             }
+            $this->database->register_table($table);
 
             # add any model to the list
             $this->models[$model->name] = $model;
@@ -114,7 +119,7 @@ class Framework
 
     private function register_buildin_models(): Framework
     {
-        $comment_model =  new BuildinModel('comment');
+        $comment_model = new BuildinModel('comment');
 
         $user_model = new BuildinModel('user');
 

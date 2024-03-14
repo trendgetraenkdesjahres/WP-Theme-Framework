@@ -3,6 +3,7 @@
 namespace WP_Framework\Model;
 
 use WP_Framework\Database\Database;
+use WP_Framework\Database\Table\CustomTable;
 use WP_Framework\Model\Instance\CustomInstance;
 use WP_Framework\Model\Instance\CustomInstanceWithMeta;
 use WP_Framework\Model\Property\ForeignProperty;
@@ -17,6 +18,13 @@ use WP_Framework\Model\Type\CustomType;
 class CustomModel extends AbstractModel
 {
     use ModelIntegrationTrait;
+
+    /**
+     * the table with data for this model.
+     *
+     * @var CustomTable
+     */
+    public CustomTable $table;
 
     /**
      * Array to store types. Null if custom Model does not support types.
