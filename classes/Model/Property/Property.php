@@ -8,6 +8,10 @@ use WP_Framework\Model\CustomModel;
 
 class Property
 {
+    private static array $illegal_property_keys = [
+        'model_name',
+        'id'
+    ];
     /**
      * @var string The internal name of the property.
      */
@@ -88,7 +92,7 @@ class Property
         $this->sql_type = $type_info['type'];
         $this->sql_type_size = $type_info['size'];
 
-        if(in_array($this->sql_type, ['int', 'bigint'])) {
+        if (in_array($this->sql_type, ['int', 'bigint'])) {
             $this->php_type = 'int';
         } else {
             $this->php_type = 'string';
@@ -111,6 +115,9 @@ class Property
     {
         if (!$key) {
             $key = sanitize_key($singular_name);
+        }
+        if (in_array($key, self::$illegal_property_keys)) {
+            throw new \Error("The key '{$key}' is illegal.");
         }
         if (!SQLSyntax::is_field_name($key)) {
             throw new \Error("The key '{$key}' is illegal.");

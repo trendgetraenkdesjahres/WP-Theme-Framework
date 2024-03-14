@@ -3,8 +3,8 @@
 namespace WP_Framework\Model;
 
 use WP_Framework\Database\Database;
-use WP_Framework\Database\Table\CustomTable;
 use WP_Framework\Model\Instance\CustomInstance;
+use WP_Framework\Model\Instance\CustomInstanceWithMeta;
 use WP_Framework\Model\Property\Property;
 use WP_Framework\Model\Type\CustomType;
 
@@ -28,11 +28,6 @@ class CustomModel extends AbstractModel
      * @var array An array to store properties of the model.
      */
     public array $properties = [];
-
-    /**
-     * @var CustomTable The name database table.
-     */
-    private CustomTable $table;
 
     /**
      * DataModel constructor.
@@ -61,9 +56,6 @@ class CustomModel extends AbstractModel
             $this->initialize_types();
         }
         $this->_init($this->name);
-        $this->table = new CustomTable(
-            Database::craete_model_table_name($this->name)
-        );
     }
 
     /**
@@ -75,9 +67,10 @@ class CustomModel extends AbstractModel
      */
     public function get_instance(int $id): CustomInstance
     {
-        $data = $this->table->get_row($id);
-
-        return new CustomInstance($this, $data);
+        if ($this->meta !== null) {
+            return CustomInstanceWithMeta::get_instance($this, $id);
+        }
+        return CustomInstance::get_instance($this, $id);
     }
 
     /**
@@ -251,7 +244,7 @@ class CustomModel extends AbstractModel
      */
     public function get_table_name(): string
     {
-        return $this->table->name;
+        return Database::craete_model_table_name($this->name);
     }
 
     /**
@@ -264,7 +257,7 @@ class CustomModel extends AbstractModel
         if ($this->meta === null) {
             return null;
         }
-        return Database::$table_prefix . "_" . $this->name . "meta";
+        return Database::craete_model_meta_table_name($this->name);
     }
 
     /**

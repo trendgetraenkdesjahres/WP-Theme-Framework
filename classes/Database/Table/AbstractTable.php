@@ -11,7 +11,7 @@ abstract class AbstractTable
     protected string $id_column_name;
 
     abstract protected function set_id_column_name(string $name): AbstractTable;
-    
+
     /**
      * __construct
      *
@@ -25,26 +25,20 @@ abstract class AbstractTable
         $this->set_id_column_name($name);
     }
 
-    public function get_row(int $id): array
+    public function get_row(int $id): ?array
     {
-        $row = wp_cache_get(
-            key: $id,
-            group: $this->name,
-            found: $success_on_cache = false
-        );
-        if ($success_on_cache) {
-            return $row;
-        }
         # TODO implement error checking
-        $row = $this->select(
+        $rows = $this->select(
             where_clause: "{$this->id_column_name} = {$id}"
         );
-        wp_cache_add(
-            key: $id,
-            data: $row,
-            group: $this->name,
-        );
-        return $row;
+        if ($rows) {
+            return $rows[0];
+        }
+        return null;
+    }
+
+    public function get_field(string $column)
+    {
     }
 
     private function select(string $columns = "*", string $where_clause = '', int $limit = 1): array

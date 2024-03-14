@@ -61,8 +61,14 @@ class Database
         return $this;
     }
 
-    public static function craete_model_table_name(string $model_name) :string{
+    public static function craete_model_table_name(string $model_name): string
+    {
         return self::$table_prefix . "_" . $model_name . "s";
+    }
+
+    public static function craete_model_meta_table_name(string $model_name): string
+    {
+        return self::$table_prefix . "_" . $model_name . "meta";
     }
 
     /**

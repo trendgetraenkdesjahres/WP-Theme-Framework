@@ -2,7 +2,6 @@
 
 namespace WP_Framework\Model\Type;
 
-use WP_Framework\Debug\Debug;
 use WP_Framework\Model\AbstractModel;
 use WP_Framework\Model\Meta\AbstractMeta;
 use WP_Framework\Model\ModelIntegrationTrait;
@@ -24,7 +23,7 @@ abstract class AbstractType extends AbstractModel
 
     public function __construct(string $name, string $singular_name, string $plural_name, string $description = '', string ...$taxonomy)
     {
-        
+
         $this
             ->set_names($name, $plural_name)
             ->set_attribute('description', $description)
@@ -50,12 +49,10 @@ abstract class AbstractType extends AbstractModel
         $attributes = JsonFile::to_array($path);
 
         # set the fancy names
-        $singular_name = isset($attributes['labels']['singular_name']) ? 
-            $attributes['labels']['singular_name']: ucfirst($name);
-        $plural_name = isset($attributes['labels']['plural_name']) ? 
-            $attributes['labels']['plural_name'] : ucfirst($name).'s';
-
-        Debug::var($attributes);
+        $singular_name = isset($attributes['labels']['singular_name']) ?
+            $attributes['labels']['singular_name'] : ucfirst($name);
+        $plural_name = isset($attributes['labels']['plural_name']) ?
+            $attributes['labels']['plural_name'] : ucfirst($name) . 's';
 
         # get class name of AbstractType implementation for calling constructor.
         $this_class = get_called_class();
