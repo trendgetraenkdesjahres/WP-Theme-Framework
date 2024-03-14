@@ -5,6 +5,7 @@ namespace WP_Framework\Model;
 use WP_Framework\Database\Database;
 use WP_Framework\Model\Instance\CustomInstance;
 use WP_Framework\Model\Instance\CustomInstanceWithMeta;
+use WP_Framework\Model\Property\ForeignProperty;
 use WP_Framework\Model\Property\Property;
 use WP_Framework\Model\Type\CustomType;
 
@@ -30,17 +31,15 @@ class CustomModel extends AbstractModel
     public array $properties = [];
 
     /**
-     * DataModel constructor.
-     * Set to private, to disable usage with 'new'.
      *
-     * @param string      $name               The name of the data model.
-     * @param string|null $plural_name        The plural form of the name (optional).
-     * @param bool        $supports_meta      Indicates whether the model has meta data.
-     * @param bool        $supports_types     Indicates whether the model has types.
-     * @param bool        $supports_hierarchy Indicates whether the model is hierarchical (objects have parents).
-     * @param string|null $owner_type         The type of owner (e.g., 'author' or 'user').
+     * @param string             $name               The name of the data model.
+     * @param string|null        $plural_name        The plural form of the name (optional).
+     * @param bool               $supports_meta      Indicates whether the model has meta data.
+     * @param bool               $supports_types     Indicates whether the model has types.
+     * @param bool               $supports_hierarchy Indicates whether the model is hierarchical (objects have parents).
+     * @param AbstractModel|null $owner_model        The type of owner (e.g., 'user' or a custom model).
      */
-    public  function __construct(string $name, ?string $plural_name = null, bool $supports_meta = false, bool $supports_types = false, bool $supports_hierarchy = false, public ?string $owner_type = null)
+    public  function __construct(string $name, ?string $plural_name = null, bool $supports_meta = false, bool $supports_types = false, bool $supports_hierarchy = false, ?AbstractModel $owner_model = null)
     {
         $this->set_names($name, $plural_name);
 
@@ -54,6 +53,10 @@ class CustomModel extends AbstractModel
 
         if ($supports_types) {
             $this->initialize_types();
+        }
+
+        if ($owner_model) {
+            $this->initialize_owner($owner_model);
         }
         $this->_init($this->name);
     }
@@ -263,9 +266,9 @@ class CustomModel extends AbstractModel
     /**
      * Initialize types-array and registers a 'type' property.
      *
-     * @return CustomModel The modified CustomModel instance.
+     * @return self The modified CustomModel instance.
      */
-    private function initialize_types(): CustomModel
+    private function initialize_types(): self
     {
         $this->types = [];
 
@@ -277,6 +280,19 @@ class CustomModel extends AbstractModel
             plural_name: "{$this->name} Types",
             is_indexable: true,
             default_value: $this->name
+        ));
+    }
+
+    /**
+     * Registers a 'owner' property.
+     *
+     * @return self The modified CustomModel instance.
+     */
+    private function initialize_owner(AbstractModel $owner_model): self
+    {
+        # add 'owner' property
+        return $this->register_property(new ForeignProperty(
+            referenced_model: $owner_model
         ));
     }
 }
