@@ -100,12 +100,14 @@ class Framework
     public function register_model(AbstractModel ...$model): Framework
     {
         foreach ($model as $model) {
+            # register data table of the custom model for interaction
             if ($model instanceof CustomModel) {
-                $model->_call_before_registration($model->sanitized_name);
-                $table = new CustomTable();
-                $this->database->register_table($model->sanitized_name);
+                $table = new CustomTable($model->get_table_name());
+                $this->database->register_table($table);
             }
-            $this->models[$model->sanitized_name] = $model;
+
+            # add any model to the list
+            $this->models[$model->name] = $model;
         }
         return $this;
     }

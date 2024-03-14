@@ -29,14 +29,14 @@ class Database
     }
 
     # is not checking for safe execution!! but's ok. the function calling this method should prepare the query...
-    public static function get_result(string $sql_query): QueryResult
+    public static function get_result(string $sql_query): array
     {
         global $wpdb;
         $result_array = $wpdb->get_results(
             query: $sql_query,
             output: ARRAY_A
         );
-        return new QueryResult($result_array);
+        return $result_array;
     }
 
     public static function get_table(string $name): AbstractTable
@@ -59,6 +59,10 @@ class Database
         }
         unset($this->tables[$table]);
         return $this;
+    }
+
+    public static function craete_model_table_name(string $model_name) :string{
+        return self::$table_prefix . "_" . $model_name . "s";
     }
 
     /**

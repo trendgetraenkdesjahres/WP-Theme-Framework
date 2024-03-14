@@ -25,6 +25,11 @@ class Property
     public ?string $sql_type_size;
 
     /**
+     * @var string The PHP data type of the property.
+     */
+    public string $php_type;
+
+    /**
      * @var FormControlElement|null The form control element associated with the property. Will try to auto-build if null.
      */
     public ?FormControlElement $form_control = null;
@@ -82,6 +87,12 @@ class Property
 
         $this->sql_type = $type_info['type'];
         $this->sql_type_size = $type_info['size'];
+
+        if(in_array($this->sql_type, ['int', 'bigint'])) {
+            $this->php_type = 'int';
+        } else {
+            $this->php_type = 'string';
+        }
 
         return $this;
     }
@@ -232,7 +243,7 @@ class Property
      */
     public function get_property_key(CustomModel $model): string
     {
-        $key = "{$model->sanitized_name}_{$this->key}";
+        $key = "{$model->name}_{$this->key}";
         if (!SQLSyntax::is_field_name($key)) {
             throw new \Error("The {$model->name}-property key '{$key}' is illegal.");
         }

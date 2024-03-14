@@ -3,8 +3,6 @@
 namespace WP_Framework\Model;
 
 use WP_Framework\Database\Database;
-use WP_Framework\Database\SQLSyntax;
-use WP_Framework\Database\Table;
 use WP_Framework\Database\Table\CustomTable;
 use WP_Framework\Model\Instance\CustomInstance;
 use WP_Framework\Model\Property\Property;
@@ -18,6 +16,7 @@ use WP_Framework\Model\Type\CustomType;
 class CustomModel extends AbstractModel
 {
     use ModelIntegrationTrait;
+
     /**
      * Array to store types. Null if custom Model does not support types.
      *
@@ -29,11 +28,6 @@ class CustomModel extends AbstractModel
      * @var array An array to store properties of the model.
      */
     public array $properties = [];
-
-    /**
-     * @var string The name of the database table.
-     */
-    public string $table_name;
 
     /**
      * @var CustomTable The name database table.
@@ -51,7 +45,7 @@ class CustomModel extends AbstractModel
      * @param bool        $supports_hierarchy Indicates whether the model is hierarchical (objects have parents).
      * @param string|null $owner_type         The type of owner (e.g., 'author' or 'user').
      */
-    public  function __construct(public string $name, public ?string $plural_name = null, bool $supports_meta = false, bool $supports_types = false, bool $supports_hierarchy = false, public ?string $owner_type = null)
+    public  function __construct(string $name, ?string $plural_name = null, bool $supports_meta = false, bool $supports_types = false, bool $supports_hierarchy = false, public ?string $owner_type = null)
     {
         $this->set_names($name, $plural_name);
 
@@ -66,7 +60,10 @@ class CustomModel extends AbstractModel
         if ($supports_types) {
             $this->initialize_types();
         }
-        $this->table = new CustomTable($this->table_name, "{$this->sanitized_name}_id");
+        $this->_init($this->name);
+        $this->table = new CustomTable(
+            Database::craete_model_table_name($this->name)
+        );
     }
 
     /**
@@ -78,11 +75,9 @@ class CustomModel extends AbstractModel
      */
     public function get_instance(int $id): CustomInstance
     {
-        $table_name = $this->get_table_name();
+        $data = $this->table->get_row($id);
 
-        $instance = Database::get_table($table_name)->get_row($id);
-        wp_cache_add($id, $instance, $this->get_table_name());
-        return $instance;
+        return new CustomInstance($this, $data);
     }
 
     /**
@@ -114,7 +109,6 @@ class CustomModel extends AbstractModel
         if ($this->types === null) {
             throw new \Error("This Model '$this->name' does not support types.");
         }
-        $type->_call_before_registration($this->name);
         return $this->add_type($type);
     }
 
@@ -257,7 +251,7 @@ class CustomModel extends AbstractModel
      */
     public function get_table_name(): string
     {
-        return Database::$table_prefix . "_" . $this->sanitized_name . "s";
+        return $this->table->name;
     }
 
     /**
@@ -270,31 +264,7 @@ class CustomModel extends AbstractModel
         if ($this->meta === null) {
             return null;
         }
-        return Database::$table_prefix . "_" . $this->sanitized_name . "meta";
-    }
-
-    /**
-     * Set the names properties
-     *
-     * @param string      $name        The name of the data model.
-     * @param string|null $plural_name The plural form of the name (optional).
-     *
-     * @return CustomModel The modified CustomModel instance.
-     * @throws \Error If the table name is illegal.
-     */
-    private function set_names(string $name, ?string $plural_name = null): CustomModel
-    {
-        $this->sanitized_name = sanitize_key($name);
-        $this->set_label_attribute('singular_name', $name);
-
-        $this->table_name = Database::$table_prefix . "_" . $this->sanitized_name;
-        if (!SQLSyntax::is_field_name($this->table_name)) {
-            throw new \Error("The table-name '$this->table_name' of is illegal.");
-        }
-
-        $this->plural_name = $plural_name ? $plural_name : $name . 's';
-        $this->set_label_attribute('name', $this->plural_name);
-        return $this;
+        return Database::$table_prefix . "_" . $this->name . "meta";
     }
 
     /**
@@ -310,10 +280,10 @@ class CustomModel extends AbstractModel
         return $this->register_property(new Property(
             key: 'type',
             sql_type: 'varchar(20)',
-            singular_name: "{$this->name} Type",
+            singular_name: "{$this->singular_name} Type",
             plural_name: "{$this->name} Types",
             is_indexable: true,
-            default_value: $this->sanitized_name
+            default_value: $this->name
         ));
     }
 }

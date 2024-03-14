@@ -2,6 +2,8 @@
 
 namespace WP_Framework\Model;
 
+use WP_Framework\Database\Database;
+use WP_Framework\Database\SQLSyntax;
 use WP_Framework\Model\Type\AbstractType;
 
 /**
@@ -12,13 +14,19 @@ use WP_Framework\Model\Type\AbstractType;
  * (e.g., PAGE, CATEGORY), providing a unified mechanism for handling WordPress-specific attributes.
  *
  * Note: The term 'type' here might cause confusion as it also refers to the base model type. Similarly,
- * 'property' is used to describe characteristics, acknowledging that base models have properties such as
+ * 'property' is used to describe characteristics, acknowledging that base models have attributes such as
  * 'author' and 'date'.
  *
  * @package YourPackage
  */
 trait ModelIntegrationTrait
 {
+    public string $name; 
+    public string $singular_name; 
+    public string $plural_name; 
+
+    public string $table_name;
+
     private static $property_keys = [
         'description',
         'public',
@@ -39,6 +47,33 @@ trait ModelIntegrationTrait
     ];
 
     protected array $attributes = [];
+
+    /**
+     * Set the names properties
+     *
+     * @param string      $name        The name of the data model.
+     * @param string|null $plural_name The plural form of the name (optional).
+     *
+     * @return self The modified instance.
+     * @throws \Error If the table name is illegal.
+     */
+    private function set_names(string $name, ?string $plural_name = null): self
+    {
+        $this->name = sanitize_key($name);
+
+        $this->singular_name = $name;
+        $this->set_label_attribute('singular_name', $name);
+
+        $this->plural_name = $plural_name ? $plural_name : $name . 's';
+        $this->set_label_attribute('name', $this->plural_name);
+
+        $this->table_name = Database::$table_prefix . "_" . $this->name.'s';
+
+        if (!SQLSyntax::is_field_name($this->table_name)) {
+            throw new \Error("The table-name '$this->table_name' of is illegal.");
+        }
+        return $this;
+    }
 
     /**
      * Get a WordPress trait attribute of this model/type.
@@ -291,57 +326,57 @@ trait ModelIntegrationTrait
     }
 
     /**
-     * Execute me before using the model.
+     * Execute me before end of constructor.
      *
-     * @param string $model_name The name of the model.
+     * @param string $sanitized_model_name The name of the model.
      *
      * @return self $this
      */
-    public function _call_before_registration(string $model_name): self
+    protected function _init(string $sanitized_model_name): self
     {
         return $this
-            ->set_attribute('object_type', $model_name)
-            ->create_capability_properties($model_name)
-            ->fill_properties_with_defaults();
+            ->set_attribute('object_type', $sanitized_model_name)
+            ->create_capability_attributes($sanitized_model_name)
+            ->fill_attributes_with_defaults();
     }
 
     /**
      * capability_type
-     * Create capability-related properties for the model/type.
+     * Create capability-related attributes for the model/type.
      *
-     * @param string $model_name The name of the model.
+     * @param string $sanitized_model_name The name of the model.
      *
      * @return self $this
      */
-    private function create_capability_properties(string $model_name): self
+    private function create_capability_attributes(string $sanitized_model_name): self
     {
         if (!isset($this->attributes['capabilities'])) {
             $this->attributes['capabilities'] = [];
         }
         return $this
-            ->set_attribute('capability_type', $model_name)
+            ->set_attribute('capability_type', $sanitized_model_name)
             ->_set_attribute('capabilities', [
-                "edit_{$model_name}" => "edit_{$model_name}",
-                "read_{$model_name}" => "read_{$model_name}",
-                "delete_{$model_name}" => "delete_{$model_name}",
-                "edit_{$model_name}s" => "edit_{$model_name}s",
-                "edit_others_{$model_name}s" => "edit_others_{$model_name}s",
-                "publish_{$model_name}s" => "publish_{$model_name}s",
-                "read_private_{$model_name}s" => "read_private_{$model_name}s"
+                "edit_{$sanitized_model_name}" => "edit_{$sanitized_model_name}",
+                "read_{$sanitized_model_name}" => "read_{$sanitized_model_name}",
+                "delete_{$sanitized_model_name}" => "delete_{$sanitized_model_name}",
+                "edit_{$sanitized_model_name}s" => "edit_{$sanitized_model_name}s",
+                "edit_others_{$sanitized_model_name}s" => "edit_others_{$sanitized_model_name}s",
+                "publish_{$sanitized_model_name}s" => "publish_{$sanitized_model_name}s",
+                "read_private_{$sanitized_model_name}s" => "read_private_{$sanitized_model_name}s"
             ]);
     }
 
     /**
-     * Fill properties with default values before usage.
+     * Fill attributes with default values before usage.
      *
      * @return self $this
      */
-    private function fill_properties_with_defaults(): self
+    private function fill_attributes_with_defaults(): self
     {
         $this
-            ->fill_label_properties_with_defaults()
-            ->fill_visibility_properties_with_defaults();
-        $default_properties = [
+            ->fill_label_attributes_with_defaults()
+            ->fill_visibility_attributes_with_defaults();
+        $default_attributes = [
             'hierarchical' => false,
             'taxonomies' => [],
             'has_archive' => false,
@@ -353,16 +388,16 @@ trait ModelIntegrationTrait
             'rest_controller_class' => ''
         ];
 
-        $this->attributes = array_merge($default_properties, $this->attributes);
+        $this->attributes = array_merge($default_attributes, $this->attributes);
         return $this;
     }
 
     /**
-     * Fill label properties with default values.
+     * Fill label attributes with default values.
      *
      * @return self $this
      */
-    private function fill_label_properties_with_defaults(): self
+    private function fill_label_attributes_with_defaults(): self
     {
         if (!isset($this->attributes['label'])) {
             $this->attributes['label'] = [];
@@ -384,11 +419,11 @@ trait ModelIntegrationTrait
     }
 
     /**
-     * Fill visibility properties with default values.
+     * Fill visibility attributes with default values.
      *
      * @return self $this
      */
-    private function fill_visibility_properties_with_defaults(): self
+    private function fill_visibility_attributes_with_defaults(): self
     {
         $visibility_defaults = [
             "public" => true,

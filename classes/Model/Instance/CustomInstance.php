@@ -11,10 +11,23 @@ use WP_Framework\Model\CustomModel;
  */
 class CustomInstance
 {
+    protected string $table_name;
+
+    # construct a new instance of this model with this properties (if they match)
     public function __construct(CustomModel $model, array $properties)
     {
-        foreach ($model->get_properties() as $model_property) {
-            $this->{$model_property->key} = $properties[$model_property->key];
+        $this->table_name = $model->get_table_name();
+        
+        foreach ($model->get_properties() as $key => $property_obj) {
+            # get the value
+            $value = $properties[$key];
+
+            # typecast value if it is an int
+            if($property_obj->php_type == 'int') {
+                $value = (int) $value;
+            }
+
+            $this->{$property_obj->key} = $value;
         }
     }
 }

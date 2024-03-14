@@ -11,7 +11,12 @@ abstract class AbstractTable
     protected string $id_column_name;
 
     abstract protected function set_id_column_name(string $name): AbstractTable;
-
+    
+    /**
+     * __construct
+     *
+     * @param  mixed $name the name of the table in the database
+     */
     public function __construct(public string $name)
     {
         if (!SQLSyntax::is_field_name($name)) {
@@ -20,7 +25,7 @@ abstract class AbstractTable
         $this->set_id_column_name($name);
     }
 
-    public function get_row(int $id): QueryResult
+    public function get_row(int $id): array
     {
         $row = wp_cache_get(
             key: $id,
@@ -30,7 +35,7 @@ abstract class AbstractTable
         if ($success_on_cache) {
             return $row;
         }
-        # implement error checking
+        # TODO implement error checking
         $row = $this->select(
             where_clause: "{$this->id_column_name} = {$id}"
         );
@@ -42,7 +47,7 @@ abstract class AbstractTable
         return $row;
     }
 
-    private function select(string $columns = "*", string $where_clause = '', int $limit = 1): QueryResult
+    private function select(string $columns = "*", string $where_clause = '', int $limit = 1): array
     {
         return Database::get_result("SELECT {$columns} FROM {$this->name} WHERE {$where_clause} LIMIT {$limit}");
     }
