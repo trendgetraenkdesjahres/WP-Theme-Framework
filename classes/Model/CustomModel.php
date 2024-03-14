@@ -63,9 +63,9 @@ class CustomModel extends AbstractModel
      *
      * @param int $object_id The ID of the object.
      *
-     * @return CustomInstance The CustomInstance instance.
+     * @return ?CustomInstance The CustomInstance instance or null on fail.
      */
-    public function get_instance(int $id): CustomInstance
+    public function get_instance(int $id): ?CustomInstance
     {
         if ($this->meta !== null) {
             return CustomInstanceWithMeta::get_instance($this, $id);
@@ -244,7 +244,7 @@ class CustomModel extends AbstractModel
      */
     public function get_table_name(): string
     {
-        return Database::craete_model_table_name($this->name);
+        return Database::create_model_table_name($this->name);
     }
 
     /**
@@ -257,7 +257,7 @@ class CustomModel extends AbstractModel
         if ($this->meta === null) {
             return null;
         }
-        return Database::craete_model_meta_table_name($this->name);
+        return Database::create_model_meta_table_name($this->name);
     }
 
     /**

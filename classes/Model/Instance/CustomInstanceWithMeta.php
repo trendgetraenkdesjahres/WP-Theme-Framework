@@ -8,7 +8,7 @@ class CustomInstanceWithMeta extends CustomInstance
 {
     public function get_meta(?string $key = null): mixed
     {
-        $meta_table_name = Database::craete_model_meta_table_name($this->model_name);
+        $meta_table_name = Database::create_model_meta_table_name($this->model_name);
 
         # try from cache
         $meta = self::get_meta_from_cache($meta_table_name, $this->id);

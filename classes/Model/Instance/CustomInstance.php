@@ -3,6 +3,7 @@
 namespace WP_Framework\Model\Instance;
 
 use WP_Framework\Database\Database;
+use WP_Framework\Debug\Debug;
 use WP_Framework\Model\CustomModel;
 
 
@@ -29,7 +30,7 @@ class CustomInstance
         }
     }
 
-    public static function get_instance(CustomModel $model, int $id): self
+    public static function get_instance(CustomModel $model, int $id): ?self
     {
         $table_name = $model->get_table_name();
 
@@ -41,10 +42,10 @@ class CustomInstance
 
         # construct new instance
         $properties = self::get_properties_from_database($table_name, $id);
-        $properties[$model->name . '_id'] = $id;
         if (!$properties) {
-            throw new \Error("Could not find a '{$model->name}' of 'id={$id}' in table '{$table_name}'.");
+            return null;
         }
+        $properties[$model->name . '_id'] = $id;
         $instance = new self($model, $properties);
 
         # cache new instance
@@ -54,10 +55,11 @@ class CustomInstance
 
     private static function get_instance_from_cache(string $model_table_name, int $id): self|null
     {
+        $success = false;
         $instance = wp_cache_get(
             key: $id,
             group: $model_table_name,
-            found: $success = false
+            found: $success
         );
         if (!$success) {
             return null;
@@ -74,7 +76,7 @@ class CustomInstance
         );
     }
 
-    private static function get_properties_from_database(string $model_table_name, int $id): array
+    private static function get_properties_from_database(string $model_table_name, int $id): ?array
     {
         return Database::get_table($model_table_name)->get_row($id);
     }

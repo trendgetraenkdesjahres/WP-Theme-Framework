@@ -3,6 +3,7 @@
 namespace WP_Framework\Database;
 
 use WP_Framework\Model\CustomModel;
+use WP_Framework\Model\Property\ForeignProperty;
 
 class QueryString
 {
@@ -13,7 +14,7 @@ class QueryString
      */
     public static function create_table(CustomModel $model): string
     {
-        $meta_table_name = Database::craete_model_table_name($model->name);
+        $meta_table_name = Database::create_model_table_name($model->name);
 
         # go
         $query = "CREATE TABLE $meta_table_name (";
@@ -23,18 +24,19 @@ class QueryString
 
         # iterate through the properties and add
         foreach ($model->properties as $property) {
+
+            # Add Column
             $query .= "{$model->name}_{$property->key} {$property->sql_type} {$property->nullable} {$property->default_value},";
+
+            # Add Foreign Key
+            if ($property instanceof ForeignProperty) {
+                $query .= "FOREIGN KEY ({$property->reference_id_column}) REFERENCES {$property->reference_table}({$property->reference_id_column}),";
+            }
         }
 
         # add hirarchie key
         if ($model->get_attribute('hierarchical', false)) {
             $query .= "{$model->name}_parent bigint(20) unsigned NOT NULL default '0',KEY {$model->name}_parent ({$model->name}_parent),";
-        }
-
-        # add owner (like 'author' or 'user')
-        if (is_string($model->owner_type)) {
-            $query .= "{$model->name}_{$model->owner_type} bigint(20) unsigned NOT NULL default '0',
-            KEY {$model->name}_{$model->owner_type} ({$model->name}_{$model->owner_type}),";
         }
 
         # add composite index of all indexable properties
@@ -52,7 +54,7 @@ class QueryString
     public static function create_meta_table(CustomModel $model): string
     {
         $max_index_length = 19; # is defined in wp_get_db_schema
-        $meta_table_name = Database::craete_model_meta_table_name($model->name);
+        $meta_table_name = Database::create_model_meta_table_name($model->name);
 
         # go
         $query = "CREATE TABLE $meta_table_name (";
