@@ -31,6 +31,6 @@ $user_model->register_meta($book);
 ## Agenda
  - [x] add custom meta
  - [x] add custom types
- - [ ] add more factory methods
+ - [x] add more factory methods
  - [ ] add foreign key to custom model properties
  - [ ] add framework shorthand methods for common use-cases

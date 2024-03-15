@@ -93,6 +93,23 @@ trait ModelIntegrationTrait
     }
 
     /**
+     * Get a WordPress capability trait attribute of this model/type.
+     *
+     * @param string $key   The capability attribute key (shortform is supported)
+     * @param bool $throw_error   Throwing an error when unable to find attribute
+     *
+     * @return mixed The attribute's value, if throwing errors is of, the method will return 'null' if no value found.
+     * @throws \Error If attribute is not set.
+     */
+    public function get_capability_attribute(string $key, bool $throw_error = true): mixed
+    {
+        if ($throw_error && !isset($this->attributes['capabilities'][$key])) {
+            throw new \Error("'$key' is not an attribute of this trait.");
+        }
+        return isset($this->attributes['capabilities'][$key]) ? $this->attributes['capabilities'][$key] : null;
+    }
+
+    /**
      * Get all trait attributes of this model/type.
      *
      * @return array The attributes

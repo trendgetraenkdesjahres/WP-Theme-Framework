@@ -78,17 +78,15 @@ abstract class AbstractModel
     /**
      * Unregister custom meta fields for this model type.
      *
-     * @param string|AbstractMeta $meta The WP_Framework Meta object or a it's key to unregister.
+     * @param AbstractMeta $meta The WP_Framework Meta object or a it's key to unregister.
      * @return AbstractModel The modified AbstractType instance.
      */
-    public function unregister_meta(string|AbstractMeta $meta): AbstractModel
+    public function unregister_meta(AbstractMeta $meta): AbstractModel
     {
-        if (!is_string($meta)) {
-            $meta = $meta->key;
-        }
-        # unregister
-        unregister_meta_key($this->name, $meta);
-        return $this->remove_meta($meta);
+        unregister_meta_key($this->name, $meta->key);
+        return $this
+            ->remove_meta($meta)
+            ->unhook_meta_actions($meta);
     }
 
     /**
@@ -172,7 +170,7 @@ abstract class AbstractModel
         return $this;
     }
 
-    
+
     /**
      * Get the database table name for the model.
      *

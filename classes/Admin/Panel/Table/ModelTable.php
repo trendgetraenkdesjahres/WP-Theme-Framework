@@ -1,10 +1,10 @@
 <?php
 
-namespace WP_Framework\AdminPanel\Table;
+namespace WP_Framework\Admin\Panel\Table;
 
 use WP_Framework\Model\CustomModel;
 
-class CustomModelTable extends AbstractTable
+class ModelTable extends AbstractTable
 {
     public function __construct(CustomModel $model)
     {
@@ -14,7 +14,7 @@ class CustomModelTable extends AbstractTable
             items_name: "{$model->name}s",
             ajax: false
         );
-        $this->bind_to_database_table($model->get_custom_model_table_name());
+        $this->bind_to_database_table($model->get_table()->name);
 
         # create columns
         foreach ($model->properties as $property) {

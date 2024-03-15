@@ -2,7 +2,8 @@
 
 namespace WP_Framework;
 
-use WP_Framework\AdminPanel\AbstractPanel;
+use WP_Framework\Admin\Panel\AbstractPanel;
+use WP_Framework\Admin\Role\Role;
 use WP_Framework\CLI\CLI;
 use WP_Framework\Database\Database;
 use WP_Framework\Database\Table\BuildinTable;
@@ -20,7 +21,7 @@ class Framework
     public readonly false|CLI $cli;
 
     protected array $models = [];
-    protected array $panels = [];
+    protected array $admin_panels = [];
 
     # Private constructor to prevent direct instantiation
     private function __construct()
@@ -32,15 +33,16 @@ class Framework
         if (self::$instance === null) {
             self::$instance = new self();
             self::$instance
-                ->register_class_autoload()
                 ->init()
                 ->register_buildin_models();
         }
         return self::$instance;
     }
 
-    private function init(): Framework
+    private function init(): self
     {
+        $this->register_class_autoload();
+
         /**
          * Adds the Database singleton.
          */
@@ -65,30 +67,63 @@ class Framework
         return $this;
     }
 
-    public function register_panel(AbstractPanel $panel): Framework
+    public function register_panel(AbstractPanel ...$panel): self
     {
-        $this->panels[$panel->name] = $panel->register();
+        foreach ($panel as $panel) {
+            $this
+                ->add_panel($panel)
+                ->hook_panel_actions($panel);
+        }
         return $this;
     }
 
-    public function unregister_panel(string $admin_panel_name): Framework
+    public function unregister_panel(AbstractPanel $panel): self
     {
-        $this->panels[$admin_panel_name]->unregister();
-        unset($this->panels[$admin_panel_name]);
+        return $this
+            ->remove_panel($panel)
+            ->unhook_panel_actions($panel);
+    }
+
+    private function hook_panel_actions(AbstractPanel $panel): self
+    {
+        # add panel to menu
+        add_action($panel->get_menu_hook(), $panel->get_menu_callback());
         return $this;
     }
 
-    public function is_registered_panel(string $admin_panel_name): bool
+    private function unhook_panel_actions(AbstractPanel $panel): self
     {
-        return isset($this->panels[$admin_panel_name]);
+        # remove panel from menu
+        remove_action($panel->get_menu_hook(), $panel->get_menu_callback());
+        return $this;
+    }
+
+    private function add_panel(AbstractPanel $panel): self
+    {
+        $this->admin_panels[$panel->name] = $panel;
+        return $this;
+    }
+
+    private function remove_panel(string|AbstractPanel $panel): self
+    {
+        if (!is_string($panel)) {
+            $panel = $panel->name;
+        }
+        unset($this->admin_panels[$panel]);
+        return $this;
     }
 
     public function get_panel(string $admin_panel_name): AbstractPanel
     {
-        if (!isset($this->panels[$admin_panel_name])) {
+        if (!isset($this->admin_panels[$admin_panel_name])) {
             throw new \Error("An admin-panel named '$admin_panel_name' is not registered");
         }
-        return $this->panels[$admin_panel_name];
+        return $this->admin_panels[$admin_panel_name];
+    }
+
+    public function get_role(string $name)
+    {
+        return Role::get_role($name);
     }
 
     /**
@@ -96,13 +131,13 @@ class Framework
      *
      * @param AbstractModel $model the name of a model-class representing a build-in Model or a DataModel-Instance to create a new model.
      *
-     * @return Framework
+     * @return self
      */
-    public function register_model(AbstractModel ...$model): Framework
+    public function register_model(AbstractModel ...$model): self
     {
         foreach ($model as $model) {
             # register data table of the custom model for interaction
-            if($model instanceof CustomModel) {
+            if ($model instanceof CustomModel) {
                 $table = new CustomTable($model->get_table_name());
             } elseif ($model instanceof BuildinModel) {
                 $table = new BuildinTable($model->get_table_name());
@@ -117,7 +152,7 @@ class Framework
         return $this;
     }
 
-    private function register_buildin_models(): Framework
+    private function register_buildin_models(): self
     {
         $comment_model = new BuildinModel('comment');
 
@@ -165,7 +200,7 @@ class Framework
         return $models;
     }
 
-    private function register_class_autoload(): Framework
+    private function register_class_autoload(): self
     {
         /**
          * Register the function to autoload classes from the 'WP_Framework' namespace

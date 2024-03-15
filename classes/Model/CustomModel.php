@@ -20,13 +20,6 @@ class CustomModel extends AbstractModel
     use ModelIntegrationTrait;
 
     /**
-     * the table with data for this model.
-     *
-     * @var CustomTable
-     */
-    public CustomTable $table;
-
-    /**
      * Array to store types. Null if custom Model does not support types.
      *
      * @var array|null

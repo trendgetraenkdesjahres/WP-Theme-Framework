@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_Framework\AdminPanel\Table;
+namespace WP_Framework\Admin\Panel\Table;
 
 use WP_Framework\Database\SQLSyntax;
 use WP_List_Table;
@@ -122,5 +122,11 @@ abstract class AbstractTable extends WP_List_Table
     public function column_default($item, $column_name)
     {
         return $item[$column_name];
+    }
+
+    public function __toString()
+    {
+        $this->prepare_items();
+        $this->display();
     }
 }

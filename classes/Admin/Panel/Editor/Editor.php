@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_Framework\AdminPanel\Editor;
+namespace WP_Framework\Admin\Panel\Editor;
 
 use WP_Framework\Element\Element;
 use WP_Framework\Element\Input\FormControlElement;
