@@ -116,7 +116,7 @@ class Debug
      *
      * @return Debug The initialized Debug instance
      */
-    public static function init(): Debug
+    public static function init(): self
     {
         if (self::$instance === null) {
             # add syntax highlighter from composer
@@ -156,7 +156,7 @@ class Debug
      *
      * @return Debug The Debug instance
      */
-    public static function var(mixed ...$var): Debug
+    public static function var(mixed ...$var): self
     {
         $me = self::init()
             ->add_var(...$var)
@@ -177,6 +177,21 @@ class Debug
             ->update_action_hook();
         add_action($me->action_hook, [$me, 'print_var']);
         die();
+    }
+
+    public static function trace(array $trace, int $offset = 0): self
+    {
+        $offset = $offset + 2;
+        $me = self::init();
+        $dump_info = $me->get_var_call_information($offset);
+        $dump_info['vars'] = $me->get_variable_info($dump_info['file_path'], $dump_info['file_line'], ...$trace[$offset - 1]['args']);
+
+        $me->update_action_hook();
+
+        # pushes info about the Debug call and it's vars into the dumps array
+        array_push($me->dumps, $dump_info);
+        add_action($me->action_hook, [$me, 'print_var']);
+        return $me;
     }
 
     /**
@@ -396,9 +411,9 @@ class Debug
      *
      * @return array Information about the variable dump call
      */
-    private function get_var_call_information(): array
+    private function get_var_call_information(int $offset = 0): array
     {
-        $caller = debug_backtrace(limit: 3)[2];
+        $caller = debug_backtrace(limit: 3 + $offset)[2 + $offset];
         $short_location = str_replace(
             search: get_stylesheet_directory(),
             replace: '',

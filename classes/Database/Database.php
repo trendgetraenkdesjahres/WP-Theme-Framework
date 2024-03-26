@@ -8,7 +8,6 @@ use WP_Framework\Model\CustomModel;
 class Database
 {
     private static $instance;
-
     public static string $charset_collate;
     public static string $table_prefix = 'fw';
     private array $tables = [];

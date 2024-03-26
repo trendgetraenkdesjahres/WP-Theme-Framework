@@ -17,7 +17,7 @@ use WP_Framework\Model\Type\CustomType;
  */
 class CustomModel extends AbstractModel
 {
-    use ModelIntegrationTrait;
+    use WP_ModelTrait;
 
     /**
      * Array to store types. Null if custom Model does not support types.

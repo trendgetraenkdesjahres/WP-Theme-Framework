@@ -2,7 +2,9 @@
 
 namespace WP_Framework\Model\Property;
 
-use WP_Framework\Database\SQLSyntax;
+use WP_Framework\Database\SQL\ThinSkinnedSyntaxCheck as SyntaxCheck;
+use WP_Framework\Database\SQL\Utils as SQLUtils;
+use WP_Framework\Debug\Debug;
 use WP_Framework\Element\Input\FormControlElement;
 use WP_Framework\Model\CustomModel;
 
@@ -84,10 +86,9 @@ class Property
      */
     private function set_types(string $sql_type): Property
     {
-        if (!SQLSyntax::is_data_type($sql_type)) {
-            throw new \Error("The SQL type '{$sql_type}' is illegal.");
-        }
-        $type_info = SQLSyntax::get_type_info($sql_type);
+        SyntaxCheck::is_data_type($sql_type);
+
+        $type_info = SQLUtils::get_type_info($sql_type);
 
         $this->sql_type = $type_info['type'];
         $this->sql_type_size = $type_info['size'];
@@ -119,9 +120,7 @@ class Property
         if (in_array($key, self::$illegal_property_keys)) {
             throw new \Error("The key '{$key}' is illegal.");
         }
-        if (!SQLSyntax::is_field_name($key)) {
-            throw new \Error("The key '{$key}' is illegal.");
-        }
+        SyntaxCheck::is_field_name($key);
         $this->key = $key;
 
         $this->plural_name = $plural_name;
@@ -166,7 +165,7 @@ class Property
      * @return FormControlElement The auto-generated form control element.
      * @throws \Error If the form control could not be auto-built.
      */
-    private function get_auto_form_control(): FormControlElement
+    protected function get_auto_form_control(): FormControlElement
     {
         $tag = '';
         $attributes = [];
@@ -208,7 +207,11 @@ class Property
             default:
                 throw new \Error("Could not auto-build form.");
         }
-        return new FormControlElement($tag, $attributes);
+
+        if ($this instanceof ForeignProperty) {
+            Debug::var($this);
+        }
+        return new FormControlElement($tag, $attributes, $this->singular_name);
     }
 
 
@@ -251,9 +254,7 @@ class Property
     public function get_property_key(CustomModel $model): string
     {
         $key = "{$model->name}_{$this->key}";
-        if (!SQLSyntax::is_field_name($key)) {
-            throw new \Error("The {$model->name}-property key '{$key}' is illegal.");
-        }
+        SyntaxCheck::is_field_name($key);
         return $key;
     }
 

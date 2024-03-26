@@ -4,7 +4,7 @@ namespace WP_Framework\Model\Type;
 
 use WP_Framework\Model\AbstractModel;
 use WP_Framework\Model\Meta\AbstractMeta;
-use WP_Framework\Model\ModelIntegrationTrait;
+use WP_Framework\Model\WP_ModelTrait;
 use WP_Framework\Utils\JsonFile;
 
 /**
@@ -14,7 +14,7 @@ use WP_Framework\Utils\JsonFile;
  */
 abstract class AbstractType extends AbstractModel
 {
-    use ModelIntegrationTrait;
+    use WP_ModelTrait;
     /**
      * The internal name of the type.
      *

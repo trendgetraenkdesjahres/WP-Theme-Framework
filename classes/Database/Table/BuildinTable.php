@@ -4,8 +4,9 @@ namespace WP_Framework\Database\Table;
 
 class BuildinTable extends AbstractTable
 {
-    protected function set_id_column_name(string $name): BuildinTable
+    protected function set_id_column_name(): BuildinTable
     {
+        $name = $this->name;
         if (str_ends_with('usermeta', $name)) {
             $this->id_column_name = 'umeta_id';
         } elseif (str_ends_with('meta', $name)) {
@@ -18,5 +19,15 @@ class BuildinTable extends AbstractTable
             $this->id_column_name = substr($name, 3, -1) . "_id";
         }
         return $this;
+    }
+
+    public function get_column_prefix(): string
+    {
+        if (str_ends_with('meta', $this->name)) {
+            # will break if used on meta_table.
+            throw new \Error('this case is not implemented yet.');
+        }
+        # removes the 'wp_', the 's' at the end and appends an '_'.
+        return preg_replace('/^wp_|s$/', '', $this->name) . '_';
     }
 }

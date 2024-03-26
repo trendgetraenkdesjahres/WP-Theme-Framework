@@ -1,8 +1,8 @@
 <?php
 
-namespace WP_Framework\Admin\Panel\Editor;
+namespace WP_Framework\Admin\Screen\Editor;
 
-use WP_Framework\Admin\Panel\Editor\Editor;
+use WP_Framework\Admin\Screen\Editor\Editor;
 use WP_Framework\Debug\Debug;
 use WP_Framework\Model\CustomModel;
 use WP_Framework\Model\Instance\CustomInstance;
@@ -14,9 +14,9 @@ class ModelEditor extends Editor
         parent::__construct(
             name: $model->name,
             action: 'post.php',
-            object: $instance,
+            instance: $instance,
             meta_sidebar: ($model->meta === false ? false : true)
         );
-        $this->add_property(...$model->get_properties());
+        $this->add_property_form(...$model->get_properties());
     }
 }

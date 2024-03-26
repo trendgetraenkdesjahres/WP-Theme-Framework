@@ -3,7 +3,7 @@
 namespace WP_Framework\Model;
 
 use WP_Framework\Database\Database;
-use WP_Framework\Database\SQLSyntax;
+use WP_Framework\Database\SQL\ThinSkinnedSyntaxCheck as SyntaxCheck;
 use WP_Framework\Model\Type\AbstractType;
 
 /**
@@ -19,11 +19,11 @@ use WP_Framework\Model\Type\AbstractType;
  *
  * @package YourPackage
  */
-trait ModelIntegrationTrait
+trait WP_ModelTrait
 {
-    public string $name; 
-    public string $singular_name; 
-    public string $plural_name; 
+    public string $name;
+    public string $singular_name;
+    public string $plural_name;
 
     public string $table_name;
 
@@ -67,11 +67,10 @@ trait ModelIntegrationTrait
         $this->plural_name = $plural_name ? $plural_name : $name . 's';
         $this->set_label_attribute('name', $this->plural_name);
 
-        $this->table_name = Database::$table_prefix . "_" . $this->name.'s';
+        $this->table_name = Database::$table_prefix . "_" . $this->name . 's';
 
-        if (!SQLSyntax::is_field_name($this->table_name)) {
-            throw new \Error("The table-name '$this->table_name' of is illegal.");
-        }
+        SyntaxCheck::is_table_name($this->table_name);
+
         return $this;
     }
 

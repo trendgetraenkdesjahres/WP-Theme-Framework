@@ -2,7 +2,7 @@
 
 namespace WP_Framework;
 
-use WP_Framework\Admin\Panel\AbstractPanel;
+use WP_Framework\Admin\Screen\Panel;
 use WP_Framework\Admin\Role\Role;
 use WP_Framework\CLI\CLI;
 use WP_Framework\Database\Database;
@@ -67,7 +67,7 @@ class Framework
         return $this;
     }
 
-    public function register_panel(AbstractPanel ...$panel): self
+    public function register_panel(Panel ...$panel): self
     {
         foreach ($panel as $panel) {
             $this
@@ -77,34 +77,34 @@ class Framework
         return $this;
     }
 
-    public function unregister_panel(AbstractPanel $panel): self
+    public function unregister_panel(Panel $panel): self
     {
         return $this
             ->remove_panel($panel)
             ->unhook_panel_actions($panel);
     }
 
-    private function hook_panel_actions(AbstractPanel $panel): self
+    private function hook_panel_actions(Panel $panel): self
     {
         # add panel to menu
-        add_action($panel->get_menu_hook(), $panel->get_menu_callback());
+        add_action('admin_menu', $panel->get_menu_callback());
         return $this;
     }
 
-    private function unhook_panel_actions(AbstractPanel $panel): self
+    private function unhook_panel_actions(Panel $panel): self
     {
         # remove panel from menu
-        remove_action($panel->get_menu_hook(), $panel->get_menu_callback());
+        remove_action('admin_menu', $panel->get_menu_callback());
         return $this;
     }
 
-    private function add_panel(AbstractPanel $panel): self
+    private function add_panel(Panel $panel): self
     {
         $this->admin_panels[$panel->name] = $panel;
         return $this;
     }
 
-    private function remove_panel(string|AbstractPanel $panel): self
+    private function remove_panel(string|Panel $panel): self
     {
         if (!is_string($panel)) {
             $panel = $panel->name;
@@ -113,7 +113,7 @@ class Framework
         return $this;
     }
 
-    public function get_panel(string $admin_panel_name): AbstractPanel
+    public function get_panel(string $admin_panel_name): Panel
     {
         if (!isset($this->admin_panels[$admin_panel_name])) {
             throw new \Error("An admin-panel named '$admin_panel_name' is not registered");
