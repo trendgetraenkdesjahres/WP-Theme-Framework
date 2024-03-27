@@ -2,13 +2,13 @@
 
 namespace WP_Framework\AssetFile;
 
-class ScriptAsset extends AssetFile implements AssetFileInterface
+class ScriptAsset extends AbstractAsset implements AssetFileInterface
 {
     protected string $default_action_hook = 'enqueue_scripts';
     protected bool $in_footer = false;
     protected ?string $strategy = null;
 
-    public function register(): ScriptAsset
+    public function register(): self
     {
         add_action($this->action_hook, function () {
             if (false === wp_register_script($this->handle, $this->url, $this->dependencies, $this->version, $this->get_composed_args())) {
@@ -22,9 +22,9 @@ class ScriptAsset extends AssetFile implements AssetFileInterface
      * Sets tag attributes for the asset.
      *
      * @param array $key_value_pairs Array of key-value pairs for attributes.
-     * @return ScriptAsset
+     * @return self
      */
-    public function set_tag_attributes(array $key_value_pairs): ScriptAsset
+    public function set_tag_attributes(array $key_value_pairs): self
     {
         add_filter('wp_script_attributes', function ($attributes) use ($key_value_pairs) {
             if (isset($attributes['id']) && str_ends_with($attributes['id'], "js") && str_starts_with($attributes['id'], "$this->handle")) {
@@ -46,9 +46,9 @@ class ScriptAsset extends AssetFile implements AssetFileInterface
      *
      * @param string $hook_name Name of the hook and the variable name for the script (use camelCase!)
      * @param string $type the type of data. need to be an php inbuild type
-     * @return ScriptAsset
+     * @return self
      */
-    public function add_data_hook(string $hook_name, string $type = 'array'): ScriptAsset
+    public function add_data_hook(string $hook_name, string $type = 'array'): self
     {
         $data = null;
         if (!settype($data, $type)) {
@@ -62,7 +62,7 @@ class ScriptAsset extends AssetFile implements AssetFileInterface
         return $this;
     }
 
-    public function enqueue(): ScriptAsset
+    public function enqueue(): self
     {
         add_action($this->action_hook, function () {
             if (false === wp_enqueue_script($this->handle, $this->url, $this->dependencies, $this->version, $this->get_composed_args())) {
@@ -72,12 +72,12 @@ class ScriptAsset extends AssetFile implements AssetFileInterface
         return $this;
     }
 
-    public function set_in_footer(bool $in_footer): ScriptAsset
+    public function set_in_footer(bool $in_footer): self
     {
         $this->$in_footer = $in_footer;
         return $this;
     }
-    public function set_strategy(string $strategy): ScriptAsset
+    public function set_strategy(string $strategy): self
     {
         $valid_strategies = [
             'defer',

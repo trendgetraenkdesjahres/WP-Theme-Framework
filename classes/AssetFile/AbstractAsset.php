@@ -2,7 +2,7 @@
 
 namespace WP_Framework\AssetFile;
 
-abstract class AssetFile
+abstract class AbstractAsset
 {
     public string $absolute_path;
     public string $handle;
@@ -10,6 +10,7 @@ abstract class AssetFile
     public string $version;
     public array $dependencies = [];
     public ?string $action_hook = null;
+    public array $action_hooks;
 
     protected string $default_action_hook;
 
@@ -37,9 +38,9 @@ abstract class AssetFile
      *
      * @param string $version [explicite description]
      *
-     * @return AssetFile
+     * @return self
      */
-    public function set_version(string $version): AssetFile
+    public function set_version(string $version): self
     {
         $this->version = $version;
         return $this;
@@ -48,10 +49,10 @@ abstract class AssetFile
     /**
      * Adds dependencies to the asset.
      *
-     * @param string ...$dependency Dependency names.
-     * @return AssetFile
+     * @param string ...$dependency Dependency names
+     * @return static
      */
-    public function add_dependencies(string ...$dependency): AssetFile
+    public function add_dependencies(string ...$dependency): static
     {
         $this->dependencies = array_merge($this->dependencies, $dependency);
         return $this;

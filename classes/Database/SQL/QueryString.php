@@ -1,7 +1,8 @@
 <?php
 
-namespace WP_Framework\Database;
+namespace WP_Framework\Database\SQL;
 
+use WP_Framework\Database\Database;
 use WP_Framework\Model\CustomModel;
 use WP_Framework\Model\Property\ForeignProperty;
 
@@ -25,13 +26,18 @@ class QueryString
         # iterate through the properties and add
         foreach ($model->properties as $property) {
 
+            $sql_type = $property->sql_type;
+            if ($property->sql_type_size) {
+                $sql_type .= "({$property->sql_type_size})";
+            }
             # Add Column
-            $query .= "{$model->name}_{$property->key} {$property->sql_type} {$property->nullable} {$property->default_value},";
+            $query .= "{$model->name}_{$property->key} {$sql_type} {$property->nullable} {$property->default_value},";
 
             # Add Foreign Key
-            if ($property instanceof ForeignProperty) {
-                $query .= "FOREIGN KEY ({$property->reference_id_column}) REFERENCES {$property->reference_table}({$property->reference_id_column}),";
-            }
+            # mysql does not support foreign key :(
+            # if ($property instanceof ForeignProperty) {
+            #     $query .= "FOREIGN KEY ({$model->name}_{$property->key}) REFERENCES {$property->reference_table}({$property->reference_id_column}),";
+            # }
         }
 
         # add hirarchie key

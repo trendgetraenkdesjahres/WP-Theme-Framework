@@ -2,6 +2,7 @@
 
 namespace WP_Framework\Database;
 
+use WP_Framework\Database\SQL\QueryString;
 use WP_Framework\Database\Table\AbstractTable;
 use WP_Framework\Model\CustomModel;
 

@@ -7,14 +7,14 @@ interface AssetFileInterface
     /**
      * Registers the asset.
      *
-     * @return AssetFileInterface
+     * @return self
      */
-    public function register(): AssetFileInterface;
+    public function register(): self;
 
     /**
      * Enqueues the asset.
      *
-     * @return AssetFileInterface
+     * @return self
      */
-    public function enqueue(): AssetFileInterface;
+    public function enqueue(): self;
 }

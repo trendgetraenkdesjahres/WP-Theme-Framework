@@ -1,12 +1,12 @@
 <?php
 
-# require composer
-require 'vendor/autoload.php';
-
 /**
  * Path of WP Framework directory with trailing slash.
  */
 define('FRAMEWORK_DIR', dirname(__FILE__) . '/');
+
+# require composer
+require FRAMEWORK_DIR . 'vendor/autoload.php';
 
 # require main class
 require 'classes/Framework.php';

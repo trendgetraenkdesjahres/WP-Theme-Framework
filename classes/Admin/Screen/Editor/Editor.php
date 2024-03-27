@@ -2,6 +2,12 @@
 
 namespace WP_Framework\Admin\Screen\Editor;
 
+/*
+- macht die abstraktion vom editor irgendwo sinn? gibt es irgendwann faelle, wo ich sie ohne mode verwenden werde
+- die  model implementation sollte eig im model-namespace liegen i guess
+- ein ctroller muss her..
+ */
+
 use WP_Framework\Admin\Screen\WP_ScreenTrait;
 use WP_Framework\Element\Element;
 use WP_Framework\Element\Input\FormControlElement;
@@ -97,8 +103,8 @@ class Editor
             'form',
             [
                 'class' => 'fw_editor',
-                'name' => 'post',
-                'action' => 'post.php',
+                'name' => 'editor',
+                'action' => 'admin.php',
                 'id' => 'post'
             ]
         );
@@ -107,11 +113,20 @@ class Editor
             $meta_box_container = new MetaBoxContainer($this->name, $this->instance);
             $wrapped->append_child($meta_box_container);
         }
+        $wrapped->append_child($this->get_submit_box());
         return $wrapped;
     }
 
     public function __toString(): string
     {
         return (string) $this->get_wrapped_fields();
+    }
+
+    public function get_submit_box()
+    {
+        $header = Element::from_string(
+            '<div class="postbox-header"><h2 class="hndle ui-sortable-handle">Publish</h2></div>'
+        );
+        return new FormControlElement('input', ['type' => 'submit', 'value' => 'submit'], 'Submit');
     }
 }

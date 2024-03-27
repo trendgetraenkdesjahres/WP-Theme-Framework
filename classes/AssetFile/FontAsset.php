@@ -11,7 +11,7 @@ namespace WP_Framework\AssetFile;
  * Instead of Enqueuing and Registration it is possible to add the FontAsset-object to a StyleAsset with the add_font() method.
  * Note: It's crucial to set the 'font_family_name' property using set_name() before registration and enqueueing.
  */
-class FontAsset extends AssetFile implements AssetFileInterface
+class FontAsset extends AbstractAsset implements AssetFileInterface
 {
     protected string $default_action_hook = 'enqueue_scripts';
 
@@ -95,7 +95,7 @@ class FontAsset extends AssetFile implements AssetFileInterface
         }
         add_action($this->action_hooks, function () {
             if (false === wp_enqueue_style($this->handle, false, $this->dependencies, $this->version)) {
-                throw new \Error("Could not enqueue '$this->handle' with function add_action('$this->action_hooks', function () {\nwp_enqueue_style('$this->handle', '$this->url', ['" . implode("', '", $this->dependencies) . "'], '$this->version', " . ($in_footer ? 'true' : 'false') . ");\n});.");
+                throw new \Error("Could not enqueue '$this->handle' with function add_action('$this->action_hooks', function () {\nwp_enqueue_style('$this->handle', '$this->url', ['" . implode("', '", $this->dependencies) . "'], '$this->version', );\n});.");
             }
             wp_add_inline_style($this->handle, $this->get_font_face_declaration());
         });

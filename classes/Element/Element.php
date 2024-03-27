@@ -3,6 +3,7 @@
 namespace WP_Framework\Element;
 
 use DOMDocument;
+use Throwable;
 
 /**
  * Class Element
@@ -12,6 +13,11 @@ use DOMDocument;
  */
 class Element extends AbstractElement
 {
+    /**
+     * @var \DOMElement The DOMElement instance.
+     */
+    protected $node;
+
     /**
      * Element constructor.
      *
@@ -34,5 +40,21 @@ class Element extends AbstractElement
 
         # add sub elements and strings
         $this->append_elements_to_node($content);
+    }
+
+    protected function set_attribute(string $attribute, ?string $value): self
+    {
+        $this->node->setAttribute($attribute, $value);
+        return $this;
+    }
+
+    public static function from_string(string $html): static
+    {
+        $dom = new DOMDocument();
+        $dom->loadXML($html);
+        $dom_node = $dom->importNode($dom->documentElement, true);
+        $element = new Element($dom_node->tagName);
+        $element->node = $dom_node;
+        return $element;
     }
 }

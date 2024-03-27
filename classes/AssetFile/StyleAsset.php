@@ -11,7 +11,7 @@ use WP_Framework\StyleFont\StyleFont;
  * The general concept involves creating a StyleAsset instance, setting its properties, and then registering and enqueuing the style asset using the register() and enqueue() methods.
  * @throws \Error If unable to register or enqueue the style asset.
  */
-class StyleAsset extends AssetFile implements AssetFileInterface
+class StyleAsset extends AbstractAsset implements AssetFileInterface
 {
     protected string $default_action_hook = 'enqueue_scripts';
     protected string $media = 'all';

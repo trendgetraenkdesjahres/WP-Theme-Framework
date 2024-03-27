@@ -2,6 +2,8 @@
 
 namespace WP_Framework\Element;
 
+use WP_Framework\Debug\Debug;
+
 /**
  * Class AbstractElement
  * @package WP_Framework\Element
