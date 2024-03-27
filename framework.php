@@ -1,5 +1,7 @@
 <?php
 
+use WP_Framework\Debug\Debug;
+
 /**
  * Path of WP Framework directory with trailing slash.
  */

@@ -8,6 +8,25 @@ namespace WP_Framework\Model\Type;
  */
 class BuildinType extends AbstractType
 {
+    public static function from_wp_type_object(\WP_Post_Type|\WP_Taxonomy $wp_type): BuildinType
+    {
+        if (property_exists($wp_type->labels, 'singular_name')) {
+            $singular_name = $wp_type->labels->singular_name;
+        } else {
+            $singular_name = $wp_type->label;
+        }
+        $type =  new BuildinType(
+            model_name: $wp_type->name,
+            singular_name: $singular_name,
+            plural_name: $wp_type->label,
+            description: $wp_type->description
+        );
+        if (property_exists($wp_type, 'taxonomies')) {
+            $type->set_taxonomies(...$wp_type->taxonomies);
+        }
+        return $type;
+    }
+
     /**
      * Hide the post type from the UI and search results.
      *

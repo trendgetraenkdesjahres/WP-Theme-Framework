@@ -101,12 +101,15 @@ class CustomModel extends AbstractModel
      * @return CustomModel The modified CustomModel instance.
      * @throws \Error If the model does not support types.
      */
-    public function register_type(CustomType $type): CustomModel
+    public function register_type(CustomType ...$type): CustomModel
     {
-        if ($this->types === null) {
-            throw new \Error("This Model '$this->name' does not support types.");
+        foreach ($type as $type) {
+            if ($this->types === null) {
+                throw new \Error("This Model '$this->name' does not support types.");
+            }
+            $this->add_type($type);
         }
-        return $this->add_type($type);
+        return $this;
     }
 
     /**

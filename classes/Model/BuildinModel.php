@@ -6,6 +6,8 @@ use WP_Framework\Database\Database;
 use WP_Framework\Database\Table\BuildinTable;
 use WP_Framework\Model\Type\BuildinType;
 
+use function WP_CLI\Utils\pluralize;
+
 /**
  * Handles the Built-in Models in WordPress.
  */
@@ -106,25 +108,28 @@ class BuildinModel extends AbstractModel
     }
 
     /**
-     * Register a built-in type.
+     * Register a type for built-in Model.
      *
      * @param BuildinType $type The BuildinType instance to register.
      *
      * @return BuildinModel The modified BuildinModel instance.
      * @throws \Error If the model does not support types.
      */
-    public function register_type(BuildinType $type): BuildinModel
+    public function register_type(BuildinType ...$type): BuildinModel
     {
-        if ($this->types === null) {
-            throw new \Error("This Model '$this->name' does not support types.");
+        foreach ($type as $type) {
+            if ($this->types === null) {
+                throw new \Error("This Model '$this->name' does not support types.");
+            }
+            $this
+                ->hook_type_register_actions($type)
+                ->add_type($type);
         }
-        return $this
-            ->hook_type_register_actions($type)
-            ->add_type($type);
+        return $this;
     }
 
     /**
-     * Unregister a built-in type.
+     * Unregister a type of a built-in Model.
      *
      * @param BuildinType $type The BuildinType instance to unregister.
      *
@@ -154,6 +159,7 @@ class BuildinModel extends AbstractModel
                     $type->get_attributes()
                 );
             } else {
+
                 call_user_func(
                     "register_{$this->name}_type",
                     $type->name,
@@ -181,6 +187,39 @@ class BuildinModel extends AbstractModel
             }
         });
         return $this;
+    }
+
+    /**
+     * Register a built-in type for built-in Model.
+     *
+     * @param BuildinType $type The BuildinType instance to register.
+     *
+     * @return BuildinModel The modified BuildinModel instance.
+     * @throws \Error If the model does not support types.
+     */
+    public function register_buildin_type(BuildinType ...$type): BuildinModel
+    {
+        foreach ($type as $type) {
+            if ($this->types === null) {
+                throw new \Error("This Model '$this->name' does not support types.");
+            }
+            $this
+                ->add_type($type);
+        }
+        return $this;
+    }
+
+    /**
+     * Unregister a build-in type of a build-in model.
+     *
+     * @param BuildinType $type The BuildinType instance to unregister.
+     *
+     * @return BuildinModel The modified BuildinModel instance.
+     */
+    public function unregister_buildin_type(BuildinType $type): BuildinModel
+    {
+        return $this
+            ->remove_type($type);
     }
 
     /**

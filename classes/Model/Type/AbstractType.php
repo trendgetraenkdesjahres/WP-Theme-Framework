@@ -2,6 +2,7 @@
 
 namespace WP_Framework\Model\Type;
 
+use WP_Framework\Debug\Debug;
 use WP_Framework\Model\AbstractModel;
 use WP_Framework\Model\Meta\AbstractMeta;
 use WP_Framework\Model\WP_ModelTrait;
@@ -15,14 +16,12 @@ use WP_Framework\Utils\JsonFile;
 abstract class AbstractType extends AbstractModel
 {
     use WP_ModelTrait;
-    /**
-     * The internal name of the type.
-     *
-     * @var string
-     */
+
+    public string $model_name;
 
     public function __construct(string $model_name, string $singular_name, string $plural_name, string $description = '', string ...$taxonomy)
     {
+        $this->model_name = $model_name;
         $this
             ->set_names($singular_name, $plural_name)
             ->set_attribute('description', $description)
@@ -86,9 +85,13 @@ abstract class AbstractType extends AbstractModel
     protected function create_meta_options(AbstractMeta $meta): array
     {
         return array_merge($meta->options, [
+            'object_subtype' => $this->name,
             'type' => $meta->type,
             'description' => $meta->description,
-            'object_subtype' => $this->attributes['object_type']
+            'single' => true,
+            'default' => '',
+            'sanitize_callback' => '__return_false',
+            'show_in_rest', true
         ]);
     }
 

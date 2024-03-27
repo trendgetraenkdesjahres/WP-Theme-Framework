@@ -12,6 +12,7 @@ use WP_Framework\Debug\Debug;
 use WP_Framework\Model\AbstractModel;
 use WP_Framework\Model\BuildinModel;
 use WP_Framework\Model\CustomModel;
+use WP_Framework\Model\Type\BuildinType;
 
 class Framework
 {
@@ -159,9 +160,17 @@ class Framework
         $user_model = new BuildinModel('user');
 
         $post_model = new BuildinModel('post', supports_types: true);
+        foreach (get_post_types(output: 'objects') as $wp_post_type) {
+            $type = BuildinType::from_wp_type_object($wp_post_type);
+            $post_model->register_buildin_type($type);
+        }
         $post_model->register_types_from_folder('post-types');
 
         $term_model = new BuildinModel('term', supports_types: true);
+        foreach (get_taxonomies(output: 'objects') as $wp_taxonomy) {
+            $type = BuildinType::from_wp_type_object($wp_taxonomy);
+            $term_model->register_buildin_type($type);
+        }
         $term_model->register_types_from_folder('taxonomies');
 
         $this->register_model($comment_model, $user_model, $post_model, $term_model);
@@ -180,6 +189,24 @@ class Framework
     {
         if (!isset($this->models[$model_name])) {
             throw new \Error("A model named '$model_name' is not registered");
+        }
+        return $this->models[$model_name];
+    }
+
+    /**
+     * Method buildin get_model
+     *
+     * @param string $name [explicite description]
+     *
+     * @return BuildinModel
+     */
+    public function get_buildin_model(string $model_name): BuildinModel
+    {
+        if (!isset($this->models[$model_name])) {
+            throw new \Error("A model named '$model_name' is not registered");
+        }
+        if (!$this->models[$model_name] instanceof BuildinModel) {
+            throw new \Error("Model '$model_name' is not buildin");
         }
         return $this->models[$model_name];
     }

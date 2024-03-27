@@ -4,6 +4,7 @@ namespace WP_Framework\Model;
 
 use WP_Framework\Database\Database;
 use WP_Framework\Database\Table\AbstractTable;
+use WP_Framework\Debug\Debug;
 use WP_Framework\Model\Meta\AbstractMeta;
 
 /**
@@ -57,16 +58,23 @@ abstract class AbstractModel
      * Register custom meta fields for this model type.
      *
      * @param AbstractMeta $meta The WP_Framework Meta object to register.
-     * @return AbstractModel The modified AbstractModel instance.
+     * @return static The modified static instance.
      * @throws \Error If the specified meta is not registered.
      */
-    public function register_meta(AbstractMeta $meta): AbstractModel
+    public function register_meta(AbstractMeta $meta): static
     {
         if ($this->meta === null) {
             throw new \Error("Model '{$this->name}' does not support meta.");
         }
+
+        # As the 'Type's inherent this method (but have a different impl of 'create_meta_options'), we need to check if we are 'model' or 'type' here to receive the actual model-name.
+        if (property_exists($this, 'model_name')) {
+            $model_name = $this->model_name;
+        } else {
+            $model_name = $this->name;
+        }
         register_meta(
-            object_type: $this->name,
+            object_type: $model_name,
             meta_key: $meta->key,
             args: $this->create_meta_options($meta)
         );
@@ -79,9 +87,9 @@ abstract class AbstractModel
      * Unregister custom meta fields for this model type.
      *
      * @param AbstractMeta $meta The WP_Framework Meta object or a it's key to unregister.
-     * @return AbstractModel The modified AbstractType instance.
+     * @return static The modified AbstractType instance.
      */
-    public function unregister_meta(AbstractMeta $meta): AbstractModel
+    public function unregister_meta(AbstractMeta $meta): static
     {
         unregister_meta_key($this->name, $meta->key);
         return $this
@@ -107,9 +115,9 @@ abstract class AbstractModel
      * Hook meta save and edit methods into wordpress actions for the given meta.
      *
      * @param AbstractMeta $meta The meta object.
-     * @return AbstractModel The modified AbstractModel instance.
+     * @return static The modified static instance.
      */
-    protected function hook_meta_actions(AbstractMeta $meta): AbstractModel
+    protected function hook_meta_actions(AbstractMeta $meta): static
     {
         # add meta input to 'edit' screens
         foreach ($meta->get_edit_hooks() as $edit_hook) {
@@ -127,9 +135,9 @@ abstract class AbstractModel
      * Unhook meta save and edit methods actions for the given meta.
      *
      * @param AbstractMeta $meta The meta object.
-     * @return AbstractModel The modified AbstractModel instance.
+     * @return static The modified static instance.
      */
-    protected function unhook_meta_actions(AbstractMeta $meta): AbstractModel
+    protected function unhook_meta_actions(AbstractMeta $meta): static
     {
         # remove meta input from 'edit' screens
         foreach ($meta->get_edit_hooks() as $edit_hook) {
@@ -147,9 +155,9 @@ abstract class AbstractModel
      * Add a meta object to the list of registered meta objects.
      *
      * @param AbstractMeta $meta The meta object.
-     * @return AbstractModel The modified AbstractModel instance.
+     * @return static The modified static instance.
      */
-    protected function add_meta(AbstractMeta $meta): AbstractModel
+    protected function add_meta(AbstractMeta $meta): static
     {
         $this->meta[$meta->key] = $meta;
         return $this;
@@ -159,9 +167,9 @@ abstract class AbstractModel
      * Remove a meta object from the list of registered meta objects.
      *
      * @param string|AbstractMeta $meta The meta object or its key.
-     * @return AbstractModel The modified AbstractModel instance.
+     * @return static The modified static instance.
      */
-    protected function remove_meta(string|AbstractMeta $meta): AbstractModel
+    protected function remove_meta(string|AbstractMeta $meta): static
     {
         if (!is_string($meta)) {
             $meta = $meta->name;

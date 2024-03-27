@@ -126,8 +126,6 @@ class FormControlElement extends Fragment
             $description = new Element('pre', $description_attributes, $parent_attributes['id']);
             return new Element('p', $description_attributes, $description);
         }
-
-        Debug::var($this);
         # if we got nothing
         return new Element('p', $description_attributes, 'hello world');
     }

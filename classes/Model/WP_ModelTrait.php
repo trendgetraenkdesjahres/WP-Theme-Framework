@@ -5,6 +5,7 @@ namespace WP_Framework\Model;
 use WP_Framework\Database\Database;
 use WP_Framework\Database\SQL\ThinSkinnedSyntaxCheck as SyntaxCheck;
 use WP_Framework\Model\Type\AbstractType;
+use WP_Framework\Model\Type\BuildinType;
 
 /**
  * Trait to integrate Custom model and model type attributes in WP Style,
@@ -59,7 +60,7 @@ trait WP_ModelTrait
      */
     private function set_names(string $name, ?string $plural_name = null): self
     {
-        $this->name = sanitize_key($name);
+        $this->name = sanitize_key(str_replace(' ', '_', $name));
 
         $this->singular_name = $name;
         $this->set_label_attribute('singular_name', $name);
@@ -67,9 +68,13 @@ trait WP_ModelTrait
         $this->plural_name = $plural_name ? $plural_name : $name . 's';
         $this->set_label_attribute('name', $this->plural_name);
 
-        $this->table_name = Database::$table_prefix . "_" . $this->name . 's';
+        if ($this instanceof BuildinType || $this instanceof BuildinModel) {
+            $this->table_name = "wp_" . $this->model_name . 's';
+        } else {
+            $this->table_name = Database::$table_prefix . "_" . $this->model_name . 's';
+            SyntaxCheck::is_table_name($this->table_name);
+        }
 
-        SyntaxCheck::is_table_name($this->table_name);
 
         return $this;
     }
