@@ -64,6 +64,9 @@ class FormControlElement extends Fragment
                     $attributes['list'] = $attributes['id'] . 's';
                     $input_element = new Element('input', $attributes, $datalist_element);
                 } else {
+                    if (isset($attributes['type']) && $attributes['type'] == 'checkbox') {
+                        $attributes['value'] = $value ? 'true' : 'false';
+                    }
                     $input_element = new Element('input', $attributes);
                 }
                 if (isset($attributes['type']) && $attributes['type'] != 'hidden') {

@@ -2,6 +2,8 @@
 
 namespace WP_Framework\Model\Meta\Buildin;
 
+use WP_Framework\Debug\Debug;
+
 /**
  * Class PostMeta
  *

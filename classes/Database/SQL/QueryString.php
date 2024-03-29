@@ -4,7 +4,7 @@ namespace WP_Framework\Database\SQL;
 
 use WP_Framework\Database\Database;
 use WP_Framework\Model\CustomModel;
-use WP_Framework\Model\Property\ForeignProperty;
+use WP_Framework\Model\Property\ForeignInstance;
 
 class QueryString
 {

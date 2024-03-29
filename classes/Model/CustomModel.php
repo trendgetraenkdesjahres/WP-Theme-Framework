@@ -6,7 +6,7 @@ use WP_Framework\Database\Database;
 use WP_Framework\Database\Table\CustomTable;
 use WP_Framework\Model\Instance\CustomInstance;
 use WP_Framework\Model\Instance\CustomInstanceWithMeta;
-use WP_Framework\Model\Property\ForeignProperty;
+use WP_Framework\Model\Property\ForeignInstance;
 use WP_Framework\Model\Property\Property;
 use WP_Framework\Model\Type\CustomType;
 
@@ -295,7 +295,7 @@ class CustomModel extends AbstractModel
     private function initialize_owner(AbstractModel $owner_model): self
     {
         # add 'owner' property
-        return $this->register_property(new ForeignProperty(
+        return $this->register_property(new ForeignInstance(
             referenced_model: $owner_model
         ));
     }

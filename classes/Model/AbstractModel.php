@@ -67,6 +67,7 @@ abstract class AbstractModel
             throw new \Error("Model '{$this->name}' does not support meta.");
         }
 
+        # This ABSTRACT MODEL Class is also used to descripe a MODEL TYPE.
         # As the 'Type's inherent this method (but have a different impl of 'create_meta_options'), we need to check if we are 'model' or 'type' here to receive the actual model-name.
         if (property_exists($this, 'model_name')) {
             $model_name = $this->model_name;
@@ -119,14 +120,22 @@ abstract class AbstractModel
      */
     protected function hook_meta_actions(AbstractMeta $meta): static
     {
+        # This ABSTRACT MODEL Class is also used to descripe a MODEL TYPE.
+        # As the 'Type's inherent this method (but have a different impl of 'create_meta_options'), we need to check if we are 'model' or 'type' here to receive a type-name (or null).
+        if (property_exists($this, 'model_name')) {
+            $type_name = $this->name;
+        } else {
+            $type_name = null;
+        }
+
         # add meta input to 'edit' screens
-        foreach ($meta->get_edit_hooks() as $edit_hook) {
+        foreach ($meta->get_edit_hooks($type_name) as $edit_hook) {
             add_action($edit_hook, $meta->get_edit_callback());
         }
 
         # add save-methods
         foreach ($meta->get_save_hooks() as $save_hook) {
-            add_action($save_hook, $meta->get_edit_callback());
+            add_action($save_hook, $meta->get_save_callback($this->model_name));
         }
         return $this;
     }

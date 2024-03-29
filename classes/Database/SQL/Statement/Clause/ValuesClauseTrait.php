@@ -2,6 +2,8 @@
 
 namespace WP_Framework\Database\SQL\Statement\Clause;
 
+use WP_Framework\Database\SQL\ThinSkinnedSyntaxCheck as SyntaxCheck;
+
 trait ValuesClauseTrait
 {
     /**
@@ -22,7 +24,7 @@ trait ValuesClauseTrait
             throw new \Error("Can not append more values to complete VALUES clause.");
         }
         foreach ($value as $value) {
-            # TODO insert checking
+            SyntaxCheck::is_safe_value($value);
             $this->values_clause .= "{$value}, ";
         }
         $this->values_clause = "VALUES (" . rtrim($this->values_clause, ', ') . ")";

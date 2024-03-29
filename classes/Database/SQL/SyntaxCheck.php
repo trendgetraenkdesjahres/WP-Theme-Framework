@@ -11,7 +11,6 @@ class SyntaxCheck
 
     public static function is_safe_value(string $value)
     {
-        # TODO better check
         if (preg_match('/[\'";]/', $value)) {
             return self::throw_exception("`$value` is not a safe value.");
         }

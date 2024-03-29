@@ -208,9 +208,6 @@ class Property
                 throw new \Error("Could not auto-build form.");
         }
 
-        if ($this instanceof ForeignProperty) {
-            Debug::var($this);
-        }
         return new FormControlElement($tag, $attributes, $this->singular_name);
     }
 

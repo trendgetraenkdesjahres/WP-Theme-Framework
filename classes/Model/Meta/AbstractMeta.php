@@ -2,6 +2,7 @@
 
 namespace WP_Framework\Model\Meta;
 
+use WP_Framework\Debug\Debug;
 use WP_Framework\Element\Input\FormControlElement;
 
 /**
@@ -267,9 +268,12 @@ abstract class AbstractMeta
             return 'string';
         }
 
-        if ($this->input_element_tag_name == 'checkbox') {
+        if ($this->input_element_type == 'checkbox') {
             return 'bool';
         }
+
+        # default:
+        return 'string';
     }
 
     /**
@@ -286,20 +290,39 @@ abstract class AbstractMeta
             case 'integer':
                 return (int) $var;
             case 'bool':
+                if (is_string($var)) {
+                    if ($var === 'true') {
+                        return true;
+                    }
+                    if ($var === 'false') {
+                        return false;
+                    }
+                }
                 return (bool) $var;
         }
+    }
+
+    /**
+     * Cast a variable to string (for storing in db).
+     *
+     * @param mixed $var The variable to cast.
+     * @return string|int|bool The casted value.
+     */
+    protected function cast_to_string(mixed $var): string|int|bool
+    {
+        return (string) $var;
     }
 
     /**
      * Get the current value of the meta field for a given object.
      *
      * @param int $object_id The ID of the object.
-     * @param string $object_type The type of the object.
+     * @param string $omodel_name The type of the model.
      * @return mixed The current value of the meta field.
      */
-    public function get_current_value(int $object_id, string $object_type): mixed
+    public function get_current_value(int $object_id, string $model_name): mixed
     {
-        $value = get_metadata($object_type, $object_id, $this->key, true);
+        $value = get_metadata($model_name, $object_id, $this->key, true);
         return $this->cast_to_data_type($value);
     }
 

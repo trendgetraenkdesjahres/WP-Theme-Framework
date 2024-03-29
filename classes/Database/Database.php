@@ -81,7 +81,6 @@ class Database
      */
     public static function create_model_tables(CustomModel ...$models): array
     {
-        # TODO clean up
         $query = '';
         foreach ($models as $model) {
             # get the model's table query

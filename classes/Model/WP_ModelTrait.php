@@ -4,6 +4,7 @@ namespace WP_Framework\Model;
 
 use WP_Framework\Database\Database;
 use WP_Framework\Database\SQL\ThinSkinnedSyntaxCheck as SyntaxCheck;
+use WP_Framework\Debug\Debug;
 use WP_Framework\Model\Type\AbstractType;
 use WP_Framework\Model\Type\BuildinType;
 
@@ -71,7 +72,7 @@ trait WP_ModelTrait
         if ($this instanceof BuildinType || $this instanceof BuildinModel) {
             $this->table_name = "wp_" . $this->model_name . 's';
         } else {
-            $this->table_name = Database::$table_prefix . "_" . $this->model_name . 's';
+            $this->table_name = Database::$table_prefix . "_" . $this->name . 's';
             SyntaxCheck::is_table_name($this->table_name);
         }
 

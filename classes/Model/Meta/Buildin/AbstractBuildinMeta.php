@@ -12,17 +12,19 @@ abstract class AbstractBuildinMeta extends AbstractMeta
 {
     public function get_save_callback(string $model): callable
     {
-        return function ($object_id) use ($model) {
-            if (!$this->is_saving_safe_and_secure($object_id, $model)) {
-                return $object_id;
+        return function ($instance_id) use ($model) {
+
+            if (!$this->is_saving_safe_and_secure($instance_id, $model)) {
+                return $instance_id;
             }
             call_user_func(
                 "update_{$model}_meta",
-                $object_id,
+                $instance_id,
                 $this->key,
-                $this->cast_to_data_type($_POST[$this->key])
+                $this->cast_to_string($_POST[$this->key])
+
             );
-            return $object_id;
+            return $instance_id;
         };
     }
 }

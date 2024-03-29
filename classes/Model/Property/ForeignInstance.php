@@ -3,12 +3,11 @@
 namespace WP_Framework\Model\Property;
 
 use WP_Framework\Database\Database;
-use WP_Framework\Debug\Debug;
 use WP_Framework\Element\Input\FormControlElement;
 use WP_Framework\Model\BuildinModel;
 use WP_Framework\Model\CustomModel;
 
-class ForeignProperty extends Property
+class ForeignInstance extends Property
 {
     public string $reference_table;
 
