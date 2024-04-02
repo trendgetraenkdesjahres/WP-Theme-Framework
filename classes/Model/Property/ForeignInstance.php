@@ -64,7 +64,7 @@ class ForeignInstance extends Property
         # TODO what if i dont know the property_title_column???
         return $form_control
             ->set_value($value)
-            ->set_id($this->key);
+            ->set_id_attribute($this->key);
     }
 
     private function get_buildin_property_title_column(): ?string

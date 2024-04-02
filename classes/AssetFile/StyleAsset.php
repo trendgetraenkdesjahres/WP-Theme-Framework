@@ -2,8 +2,6 @@
 
 namespace WP_Framework\AssetFile;
 
-use WP_Framework\StyleFont\StyleFont;
-
 /**
  * StyleAsset
  *

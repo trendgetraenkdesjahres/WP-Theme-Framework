@@ -211,6 +211,16 @@ class Framework
         return $this->models[$model_name];
     }
 
+    public function get_post_type(string $type): BuildinType
+    {
+        return $this->get_buildin_model('post')->get_type($type);
+    }
+
+    public function get_taxonomy(string $type): BuildinType
+    {
+        return $this->get_buildin_model('term')->get_type($type);
+    }
+
     public function get_models(bool $include_build_ins = false): array
     {
         if ($include_build_ins) {

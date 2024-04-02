@@ -3,7 +3,6 @@
 namespace WP_Framework\Model\Meta;
 
 use WP_Framework\Debug\Debug;
-use WP_Framework\Element\AbstractElement;
 use WP_Framework\Element\Input\FormControlElement;
 
 /**
@@ -34,7 +33,7 @@ abstract class AbstractMeta
     /**
      * @var string The type of the meta field (e.g., 'string').
      */
-    public string $type = 'string';
+    public string $type;
 
     /**
      * @var string The description of the meta field.
@@ -42,19 +41,19 @@ abstract class AbstractMeta
     public string $description;
 
     /**
+     * @var string The default of the meta field.
+     */
+    public mixed $default;
+
+    /**
      * @var string The position to display the input field (side, normal, advanced).
      */
     protected string $input_field_position;
 
     /**
-     * @var string The nonce name for the input field.
+     * @var string The html nonce input field.
      */
-    protected string $input_field_nonce_name;
-
-    /**
-     * @var string The action name for the input field.
-     */
-    protected string $input_field_action_name;
+    protected string $nonce_field;
 
     /**
      * @var array The options for the meta field, with defaults.
@@ -67,6 +66,8 @@ abstract class AbstractMeta
     /**
      * Create a new Meta instance.
      *
+     * to be functional, the 'set_key' method needs to be called.
+     *
      * @param string $title The name (which will be displayed) of the meta field.
      * @param string|null $description Optional. The description of the meta field to display.
      * @param string $input_element_tag_name Optional. The HTML tag for the input element (input, textarea, select).
@@ -75,19 +76,16 @@ abstract class AbstractMeta
      * @param array|null $input_element_attributes Optional. Additional attributes for the input element.
      * @param string $display_position Optional. The position to display the input field (side, normal, advanced).
      */
-    public function __construct(
-        string $name,
-        FormControlElement $form_control,
-        protected string $display_position = 'side'
-    ) {
+    public function __construct(string $name, FormControlElement $form_control, mixed $default = null, string $display_position = 'side')
+    {
         $this->name = $name;
-        $this->key = sanitize_title(get_stylesheet() . "-meta-{$this->name}");
-
         $this->form_control_element = $form_control;
-
-        $this->input_field_nonce_name = "{$this->key}_nonce";
-        $this->input_field_action_name = "{$this->key}_action";
-
+        $this->type = $this->form_control_element->get_data_type();
+        $this->default = $default;
+        if ($this->default !== null && ($this->type !== gettype($this->default))) {
+            throw new \Error();
+        }
+        $this->description = $this->form_control_element->description;
         $this->input_field_position = str_validate($display_position, 'side', 'normal', 'advanced');
     }
 
@@ -108,6 +106,21 @@ abstract class AbstractMeta
     abstract public function get_edit_callback(?string $model_name = null): callable;
 
 
+    public function set_key(string $model_name): static
+    {
+        $this->key = sanitize_title("{$model_name}-meta-{$this->name}");
+
+        $this->form_control_element->set_name_attribute($this->key);
+        $this->nonce_field = wp_nonce_field(
+            action: "{$this->key}_action",
+            name: "{$this->key}_nonce",
+            referer: true,
+            display: false
+        );
+        return $this;
+    }
+
+
     /**
      * Set options for the meta field.
      * 'object_subtype', 'type', 'string', 'description' are set by the class.
@@ -126,50 +139,19 @@ abstract class AbstractMeta
     }
 
     /**
-     * Get the data type associated with the meta field.
-     *
-     * @return string The data type (e.g., 'string', 'integer', 'bool').
-     */
-    public function get_data_type(): string
-    {
-        if ($this->form_control_element->get_tag_name() == 'textarea') {
-            return 'string';
-        }
-
-        if ($this->form_control_element->get_tag_name() == 'select') {
-            return 'string';
-        }
-
-        if ($this->form_control_element->get_attribute('type') == 'number' || $this->form_control_element->get_attribute('type') == 'range') {
-            return 'integer';
-        }
-
-        if ($this->form_control_element->get_attribute('type') == 'text') {
-            return 'string';
-        }
-
-        if ($this->form_control_element->get_attribute('type') == 'checkbox') {
-            return 'bool';
-        }
-
-        # default:
-        return 'string';
-    }
-
-    /**
      * Cast a variable to the data type associated with the meta field.
      *
      * @param mixed $var The variable to cast.
      * @return string|int|bool The casted value.
      */
-    protected function cast_to_data_type(mixed $var): string|int|bool
+    public function cast_to_data_type(mixed $var): string|int|bool
     {
-        switch ($this->get_data_type()) {
+        switch ($this->type) {
             case 'string':
                 return (string) $var;
             case 'integer':
                 return (int) $var;
-            case 'bool':
+            case 'boolean':
                 if (is_string($var)) {
                     if ($var === 'true') {
                         return true;
@@ -218,10 +200,15 @@ abstract class AbstractMeta
         return (string) $this->form_control_element;
     }
 
+    protected function get_nonce_field(): string
+    {
+        return $this->nonce_field;
+    }
+
     /**
      * Get the hooks used for saving the meta field.
      *
-     * @param string|null $model_name The type of the model associated with the meta field.
+     * @param string|null $model_name The subtype of the model associated with the meta field. If the meta field is associated with a model itself (post, user, ...) it is null.
      * @return array The array of hooks used for saving the meta field.
      */
     public function get_save_hooks(?string $model_name = null): array
@@ -232,12 +219,32 @@ abstract class AbstractMeta
     /**
      * Get the hooks used for editing the meta field.
      *
-     * @param string|null $model_name The name of the model associated with the meta field.
+     * @param string|null $model_name The subtype of the model associated with the meta field. If the meta field is associated with a model itself (post, user, ...) it is null.
      * @return array The array of hooks used for editing the meta field.
      */
     public function get_edit_hooks(?string $model_name = null): array
     {
         return $this->edit_hooks;
+    }
+
+    private function is_initialzed(): bool
+    {
+        if (!isset($this->key)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function get_posted_value()
+    {
+        if ($this->type == 'boolean') {
+            return isset($_POST[$this->key]);
+        } else {
+            return $this->cast_to_data_type(
+                $_POST[$this->key]
+            );
+        }
     }
 
     /**
@@ -285,10 +292,10 @@ abstract class AbstractMeta
      */
     private function is_nonce_verified()
     {
-        if (!isset($_POST[$this->input_field_nonce_name])) {
+        if (!isset($_POST["{$this->key}_nonce"])) {
             return false;
         }
-        if (wp_verify_nonce($_POST[$this->input_field_nonce_name], $this->input_field_action_name)) {
+        if (wp_verify_nonce($_POST["{$this->key}_nonce"], "{$this->key}_action")) {
             return true;
         }
         return false;

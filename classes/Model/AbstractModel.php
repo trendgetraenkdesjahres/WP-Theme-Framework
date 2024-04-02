@@ -4,7 +4,6 @@ namespace WP_Framework\Model;
 
 use WP_Framework\Database\Database;
 use WP_Framework\Database\Table\AbstractTable;
-use WP_Framework\Debug\Debug;
 use WP_Framework\Model\Meta\AbstractMeta;
 
 /**
@@ -26,8 +25,18 @@ abstract class AbstractModel
      *
      * @var array|null
      */
-    public ?array $meta = null;
+    protected ?array $meta = null;
 
+    public function set_meta_support(bool $support_meta = true): static
+    {
+        if ($this->meta === null && $support_meta == true) {
+            $this->meta = [];
+        }
+        if (is_array($this->meta) && $support_meta == false) {
+            $this->meta = null;
+        }
+        return $this;
+    }
     /**
      * Get a meta object of this model type.
      *
@@ -37,6 +46,7 @@ abstract class AbstractModel
      */
     public function get_meta(string $name): AbstractMeta
     {
+        $this->validate_meta_support();
         if (!isset($this->meta[$name])) {
             throw new \Error("A {$this->name}-meta named '$name' is not registered");
         }
@@ -51,6 +61,7 @@ abstract class AbstractModel
      */
     public function get_metas(): array
     {
+        $this->validate_meta_support();
         return $this->meta;
     }
 
@@ -63,10 +74,8 @@ abstract class AbstractModel
      */
     public function register_meta(AbstractMeta $meta): static
     {
-        if ($this->meta === null) {
-            throw new \Error("Model '{$this->name}' does not support meta.");
-        }
-
+        $this->validate_meta_support();
+        $meta->set_key($this->name);
         register_meta(
             object_type: $this->name,
             meta_key: $meta->key,
@@ -85,6 +94,7 @@ abstract class AbstractModel
      */
     public function unregister_meta(AbstractMeta $meta): static
     {
+        $this->validate_meta_support();
         unregister_meta_key($this->name, $meta->key);
         return $this
             ->remove_meta($meta)
@@ -99,9 +109,17 @@ abstract class AbstractModel
      */
     protected function create_meta_options(AbstractMeta $meta): array
     {
+        if (!isset($meta->default)) {
+            $default = $meta->cast_to_data_type('');
+        } else {
+            $default = $meta->default;
+        }
         return array_merge($meta->options, [
             'type' => $meta->type,
-            'description' => $meta->description
+            'description' => $meta->description,
+            'single' => true,
+            'default' => $default,
+            'show_in_rest', true
         ]);
     }
 
@@ -170,6 +188,13 @@ abstract class AbstractModel
         }
         unset($this->meta[$meta]);
         return $this;
+    }
+
+    protected function validate_meta_support(): void
+    {
+        if ($this->meta === null) {
+            throw new \Error("Model '{$this->name}' does not support meta.");
+        }
     }
 
 

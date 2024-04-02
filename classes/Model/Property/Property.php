@@ -156,7 +156,7 @@ class Property
         }
         return $form_control
             ->set_value($value)
-            ->set_id($this->key);
+            ->set_id_attribute($this->key);
     }
 
     /**

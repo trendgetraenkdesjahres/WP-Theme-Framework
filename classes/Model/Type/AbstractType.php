@@ -84,9 +84,9 @@ abstract class AbstractType extends AbstractModel
      */
     public function register_meta(AbstractMeta $meta): static
     {
-        if ($this->meta === null) {
-            throw new \Error("Model type '{$this->name}' does not support meta.");
-        }
+        $this->validate_meta_support();
+        $meta->set_key($this->model_name);
+
         register_meta(
             object_type: $this->model_name,
             meta_key: $meta->key,
@@ -120,12 +120,12 @@ abstract class AbstractType extends AbstractModel
     protected function hook_meta_actions(AbstractMeta $meta): static
     {
         # add meta input to 'edit' screens
-        foreach ($meta->get_edit_hooks($this->model_name) as $edit_hook) {
+        foreach ($meta->get_edit_hooks($this->name) as $edit_hook) {
             add_action($edit_hook, $meta->get_edit_callback());
         }
 
         # add save-methods
-        foreach ($meta->get_save_hooks($this->model_name) as $save_hook) {
+        foreach ($meta->get_save_hooks($this->name) as $save_hook) {
             add_action($save_hook, $meta->get_save_callback($this->model_name));
         }
         return $this;
@@ -140,15 +140,9 @@ abstract class AbstractType extends AbstractModel
      */
     protected function create_meta_options(AbstractMeta $meta): array
     {
-        return array_merge($meta->options, [
-            'object_subtype' => $this->name,
-            'type' => $meta->type,
-            'description' => $meta->description,
-            'single' => true,
-            'default' => '',
-            'sanitize_callback' => '__return_false',
-            'show_in_rest', true
-        ]);
+        $meta_options = parent::create_meta_options($meta);
+        $meta_options['object_subtype'] = $this->name;
+        return $meta_options;
     }
 
     /**

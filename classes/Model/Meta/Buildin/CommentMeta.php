@@ -22,17 +22,12 @@ class CommentMeta extends AbstractBuildinMeta
     public function get_edit_callback(?string $model_type = null): callable
     {
         return function (\WP_Comment|string $comment) {
-            wp_nonce_field(
-                action: $this->input_field_action_name,
-                name: $this->input_field_nonce_name,
-                referer: true
-            );
-
             # when creating a new comment, the parameter $comment is string of the taxonomy. a new $comment has no value yet.
             $input_field_value = null;
             if ($comment instanceof \WP_Comment) {
                 $input_field_value = $this->get_current_value($comment->comment_ID, 'comment');
             }
+            echo $this->get_nonce_field();
             echo "<table class='form-table'><tr>\n
             <th><label for='{$this->key}'>{$this->name}</label></th>\n
 			<td>" . $this->get_form_control($input_field_value) . "</td>\n

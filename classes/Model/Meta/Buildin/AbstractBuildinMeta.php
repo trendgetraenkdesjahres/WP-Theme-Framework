@@ -17,12 +17,11 @@ abstract class AbstractBuildinMeta extends AbstractMeta
             if (!$this->is_saving_safe_and_secure($instance_id, $model)) {
                 return $instance_id;
             }
-            call_user_func(
-                "update_{$model}_meta",
-                $instance_id,
-                $this->key,
-                $this->cast_to_string($_POST[$this->key])
-
+            update_metadata(
+                meta_type: $model,
+                object_id: $instance_id,
+                meta_key: $this->key,
+                meta_value: $this->get_posted_value(),
             );
             return $instance_id;
         };
