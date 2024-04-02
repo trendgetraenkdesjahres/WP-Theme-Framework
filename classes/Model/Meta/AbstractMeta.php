@@ -3,6 +3,7 @@
 namespace WP_Framework\Model\Meta;
 
 use WP_Framework\Debug\Debug;
+use WP_Framework\Element\AbstractElement;
 use WP_Framework\Element\Input\FormControlElement;
 
 /**
@@ -61,6 +62,8 @@ abstract class AbstractMeta
      */
     public array $options = [];
 
+    protected FormControlElement $form_control_element;
+
     /**
      * Create a new Meta instance.
      *
@@ -73,17 +76,14 @@ abstract class AbstractMeta
      * @param string $display_position Optional. The position to display the input field (side, normal, advanced).
      */
     public function __construct(
-        public string $title,
-        string $description = null,
-        protected string $input_element_tag_name = 'input',
-        protected ?string $input_element_type = null,
-        protected ?array $input_element_options = null,
-        protected ?array $input_element_attributes = null,
+        string $name,
+        FormControlElement $form_control,
         protected string $display_position = 'side'
     ) {
-        $this->name = sanitize_title($title);
-        $this->key = sanitize_title(get_stylesheet() . "-$this->name");
-        $this->description = esc_xml($description);
+        $this->name = $name;
+        $this->key = sanitize_title(get_stylesheet() . "-meta-{$this->name}");
+
+        $this->form_control_element = $form_control;
 
         $this->input_field_nonce_name = "{$this->key}_nonce";
         $this->input_field_action_name = "{$this->key}_action";
@@ -94,139 +94,19 @@ abstract class AbstractMeta
     /**
      * Get the save callback function for the meta field.
      *
-     * @param string $model The model associated with the meta field.
+     * @param string $model_name The model associated with the meta field.
      * @return callable The save callback function.
      */
-    abstract public function get_save_callback(string $model): callable;
+    abstract public function get_save_callback(string $model_name): callable;
 
     /**
      * Get the edit callback function for the meta field.
      *
-     * @param string|null $model_type The type of the model associated with the meta field.
+     * @param string|null $model_name The type of the model associated with the meta field.
      * @return callable The edit callback function.
      */
-    abstract public function get_edit_callback(?string $model_type = null): callable;
+    abstract public function get_edit_callback(?string $model_name = null): callable;
 
-    /**
-     * Creates a number input meta field.
-     *
-     * @param string $meta_name The name of the meta field.
-     * @param string $description The description of the meta field.
-     * @param array $attributes Additional attributes for the input element.
-     * @return AbstractMeta The created meta field.
-     */
-    public static function create_number(string $meta_name, string $description, string|array $assign_to_type, array $attributes = []): AbstractMeta
-    {
-        $meta_class = get_called_class();
-        return new $meta_class(
-            title: $meta_name,
-            description: $description,
-            input_element_type: 'number',
-            input_element_attributes: $attributes
-        );
-    }
-
-    /**
-     * Creates a number range input meta field.
-     *
-     * @param string $meta_name The name of the meta field.
-     * @param string $description The description of the meta field.
-     * @param array $attributes Attributes for the input element. 'min' and 'max' are required.
-     * @return AbstractMeta The created meta field.
-     * @throws \Error If 'min' and 'max' attributes are not provided.
-     */
-    public static function create_number_range(string $meta_name, string $description, array $attributes): AbstractMeta
-    {
-        if (!isset($attributes['min']) || !isset($attributes['min'])) {
-            throw new \Error("'min' and 'max' attributes are necessary.");
-        }
-        $meta_class = get_called_class();
-        return new $meta_class(
-            title: $meta_name,
-            description: $description,
-            input_element_type: 'range',
-            input_element_attributes: $attributes
-        );
-    }
-
-    /**
-     * Creates a text input meta field.
-     *
-     * @param string $meta_name The name of the meta field.
-     * @param string $description The description of the meta field.
-     * @param array $attributes Additional attributes for the input element. 'maxlength' is recommended.
-     * @return AbstractMeta The created meta field.
-     */
-    public static function create_text(string $meta_name, string $description, array $attributes = []): AbstractMeta
-    {
-        $meta_class = get_called_class();
-        return new $meta_class(
-            title: $meta_name,
-            description: $description,
-            input_element_type: 'text',
-            input_element_attributes: $attributes
-        );
-    }
-
-    /**
-     * Creates a multiline text input meta field.
-     *
-     * @param string $meta_name The name of the meta field.
-     * @param string $description The description of the meta field.
-     * @param array $attributes Additional attributes for the input element. 'rows' and 'cols' are recommended.
-     * @return AbstractMeta The created meta field.
-     */
-    public static function create_text_multiline(string $meta_name, string $description, array $attributes = []): AbstractMeta
-    {
-        $meta_class = get_called_class();
-        return new $meta_class(
-            title: $meta_name,
-            description: $description,
-            input_element_tag_name: 'textarea',
-            input_element_attributes: $attributes
-        );
-    }
-
-    /**
-     * Creates an options meta field.
-     *
-     * @param string $meta_name The name of the meta field.
-     * @param string $description The description of the meta field.
-     * @param array $options The options for select input elements.
-     * @param array $attributes Additional attributes for the input element.
-     * @return AbstractMeta The created options meta field.
-     */
-    public static function create_options(string $meta_name, string $description, array $options, array $attributes = []): AbstractMeta
-    {
-        $meta_class = get_called_class();
-        return new $meta_class(
-            title: $meta_name,
-            description: $description,
-            input_element_tag_name: 'select',
-            input_element_options: $options,
-            input_element_attributes: $attributes
-        );
-    }
-
-
-    /**
-     * Creates a boolean (checkbox) meta field.
-     *
-     * @param string $meta_name The name of the meta field.
-     * @param string $description The description of the meta field.
-     * @param array $attributes Additional attributes for the checkbox input field.
-     * @return AbstractMeta The created meta field instance.
-     */
-    public static function create_bool(string $meta_name, string $description, array $attributes = []): AbstractMeta
-    {
-        $meta_class = get_called_class();
-        return new $meta_class(
-            title: $meta_name,
-            description: $description,
-            input_element_type: 'checkbox',
-            input_element_attributes: $attributes
-        );
-    }
 
     /**
      * Set options for the meta field.
@@ -252,23 +132,23 @@ abstract class AbstractMeta
      */
     public function get_data_type(): string
     {
-        if ($this->input_element_tag_name == 'textarea') {
+        if ($this->form_control_element->get_tag_name() == 'textarea') {
             return 'string';
         }
 
-        if ($this->input_element_tag_name == 'select') {
+        if ($this->form_control_element->get_tag_name() == 'select') {
             return 'string';
         }
 
-        if ($this->input_element_type == 'number' || $this->input_element_type == 'range') {
+        if ($this->form_control_element->get_attribute('type') == 'number' || $this->form_control_element->get_attribute('type') == 'range') {
             return 'integer';
         }
 
-        if ($this->input_element_type == 'text') {
+        if ($this->form_control_element->get_attribute('type') == 'text') {
             return 'string';
         }
 
-        if ($this->input_element_type == 'checkbox') {
+        if ($this->form_control_element->get_attribute('type') == 'checkbox') {
             return 'bool';
         }
 
@@ -334,27 +214,17 @@ abstract class AbstractMeta
      */
     protected function get_form_control(mixed $value = ''): string
     {
-        $input_field = new FormControlElement(
-            tag_name: $this->input_element_tag_name,
-            attributes: $this->input_element_attributes + [
-                'id' => $this->key,
-                'value' => $value,
-                'name' => $this->key,
-                'type' => $this->input_element_type
-            ],
-            description: $this->description,
-            options: $this->input_element_options
-        );
-        return (string) $input_field;
+        $this->form_control_element->set_value($value);
+        return (string) $this->form_control_element;
     }
 
     /**
      * Get the hooks used for saving the meta field.
      *
-     * @param string|null $model_type The type of the model associated with the meta field.
+     * @param string|null $model_name The type of the model associated with the meta field.
      * @return array The array of hooks used for saving the meta field.
      */
-    public function get_save_hooks(?string $model_type = null): array
+    public function get_save_hooks(?string $model_name = null): array
     {
         return $this->save_hooks;
     }
@@ -362,10 +232,10 @@ abstract class AbstractMeta
     /**
      * Get the hooks used for editing the meta field.
      *
-     * @param string|null $model_type The type of the model associated with the meta field.
+     * @param string|null $model_name The name of the model associated with the meta field.
      * @return array The array of hooks used for editing the meta field.
      */
-    public function get_edit_hooks(?string $model_type = null): array
+    public function get_edit_hooks(?string $model_name = null): array
     {
         return $this->edit_hooks;
     }
@@ -374,12 +244,12 @@ abstract class AbstractMeta
      * Check if saving is safe and the nonce is verified.
      *
      * @param int $object_id    The ID of the object.
-     * @param string $model_type The name of the object's model.
+     * @param string $model_name The name of the object's model.
      * @return bool True if saving is safe and secure, false otherwise.
      */
-    protected function is_saving_safe_and_secure(int $object_id, string $model)
+    protected function is_saving_safe_and_secure(int $object_id, string $model_name)
     {
-        if (!self::is_safe_to_save($object_id, $model)) {
+        if (!self::is_safe_to_save($object_id, $model_name)) {
             return false;
         }
         return $this->is_nonce_verified();
@@ -392,13 +262,13 @@ abstract class AbstractMeta
      * @param string $model_type The name of the object's model.
      * @return bool True if it's safe to save, false otherwise.
      */
-    private static function is_safe_to_save(int $object_id, string $model): bool
+    private static function is_safe_to_save(int $object_id, string $model_name): bool
     {
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
             return false;
         }
 
-        if (!current_user_can("edit_{$model}", $object_id)) {
+        if (!current_user_can("edit_{$model_name}", $object_id)) {
             return false;
         }
 

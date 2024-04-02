@@ -76,7 +76,63 @@ abstract class AbstractType extends AbstractModel
     }
 
     /**
-     * Creates options for registering meta fields.
+     * Register custom meta fields for this model type.
+     *
+     * @param AbstractMeta $meta The WP_Framework Meta object to register.
+     * @return static The modified static instance.
+     * @throws \Error If the specified meta is not registered.
+     */
+    public function register_meta(AbstractMeta $meta): static
+    {
+        if ($this->meta === null) {
+            throw new \Error("Model type '{$this->name}' does not support meta.");
+        }
+        register_meta(
+            object_type: $this->model_name,
+            meta_key: $meta->key,
+            args: $this->create_meta_options($meta)
+        );
+        return $this
+            ->add_meta($meta)
+            ->hook_meta_actions($meta);
+    }
+
+    /**
+     * Unregister custom meta fields for this model type.
+     *
+     * @param AbstractMeta $meta The WP_Framework Meta object or a it's key to unregister.
+     * @return static The modified AbstractType instance.
+     */
+    public function unregister_meta(AbstractMeta $meta): static
+    {
+        unregister_meta_key($this->model_name, $meta->key);
+        return $this
+            ->remove_meta($meta)
+            ->unhook_meta_actions($meta);
+    }
+
+    /**
+     * Hook meta save and edit methods into wordpress actions for the given meta.
+     *
+     * @param AbstractMeta $meta The meta object.
+     * @return static The modified static instance.
+     */
+    protected function hook_meta_actions(AbstractMeta $meta): static
+    {
+        # add meta input to 'edit' screens
+        foreach ($meta->get_edit_hooks($this->model_name) as $edit_hook) {
+            add_action($edit_hook, $meta->get_edit_callback());
+        }
+
+        # add save-methods
+        foreach ($meta->get_save_hooks($this->model_name) as $save_hook) {
+            add_action($save_hook, $meta->get_save_callback($this->model_name));
+        }
+        return $this;
+    }
+
+    /**
+     * Creates options-array for registering meta fields.
      *
      * @param AbstractMeta $meta The WP_Framework Meta object.
      *

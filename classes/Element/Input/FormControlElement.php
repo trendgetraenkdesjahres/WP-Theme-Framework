@@ -46,9 +46,8 @@ class FormControlElement extends Fragment
      * @param string $description The description for the form control element.
      * @param array $options Optional options for <select> elements ['value' => 'name', ...].
      */
-    public function __construct(private string $tag_name, private array $attributes, ?string $description = null, $options = [])
+    public function __construct(private string $tag_name, private array $attributes, ?string $description = null, $options = [], null|bool|int|string $current_value = null)
     {
-        $value = isset($attributes['value']) ?  $attributes['value'] : null;
         # create options
         if ($options) {
             $option_elements = $this->get_select_option_elements($options, $value);
@@ -70,20 +69,20 @@ class FormControlElement extends Fragment
                     $input_element = new Element('input', $attributes);
                 }
                 if (isset($attributes['type']) && $attributes['type'] != 'hidden') {
-                    $description_element = $this->get_description($description, $attributes);
+                    $description_element = $this->create_description($description, $attributes);
                 } else {
                     $description_element = null;
                 }
                 break;
             case 'textarea':
-                $description_element = $this->get_description($description, $attributes);
+                $description_element = $this->create_description($description, $attributes);
                 $input_element = new Element('textarea', $attributes, $attributes['value'] ?? '');
                 break;
             case 'select':
                 if ($options) {
                     $option_elements = $this->get_select_option_elements($options, $attributes['value']);
                 }
-                $description_element = $this->get_description($description, $attributes);
+                $description_element = $this->create_description($description, $attributes);
                 $input_element = new Element('select', $attributes, ...$option_elements);
                 break;
             default:
@@ -105,7 +104,7 @@ class FormControlElement extends Fragment
         return $option_elements;
     }
 
-    private function get_description(?string $description, array $parent_attributes): Element
+    private function create_description(?string $description, array $parent_attributes): Element
     {
         # build attributes
         $description_attributes = ['class' => 'description'];
@@ -131,6 +130,19 @@ class FormControlElement extends Fragment
         }
         # if we got nothing
         return new Element('p', $description_attributes, 'hello world');
+    }
+
+    public function get_tag_name(): string
+    {
+        return $this->tag_name;
+    }
+
+    public function get_attribute(string $attribute_name): string
+    {
+        if (!isset($this->attributes[$attribute_name])) {
+            throw new \Error("'{$attribute_name}' is not set.");
+        }
+        return $this->attributes[$attribute_name];
     }
 
     public function set_value(mixed $value): FormControlElement

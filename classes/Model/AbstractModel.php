@@ -55,7 +55,7 @@ abstract class AbstractModel
     }
 
     /**
-     * Register custom meta fields for this model type.
+     * Register custom meta fields for this model.
      *
      * @param AbstractMeta $meta The WP_Framework Meta object to register.
      * @return static The modified static instance.
@@ -67,15 +67,8 @@ abstract class AbstractModel
             throw new \Error("Model '{$this->name}' does not support meta.");
         }
 
-        # This ABSTRACT MODEL Class is also used to descripe a MODEL TYPE.
-        # As the 'Type's inherent this method (but have a different impl of 'create_meta_options'), we need to check if we are 'model' or 'type' here to receive the actual model-name.
-        if (property_exists($this, 'model_name')) {
-            $model_name = $this->model_name;
-        } else {
-            $model_name = $this->name;
-        }
         register_meta(
-            object_type: $model_name,
+            object_type: $this->name,
             meta_key: $meta->key,
             args: $this->create_meta_options($meta)
         );
@@ -85,7 +78,7 @@ abstract class AbstractModel
     }
 
     /**
-     * Unregister custom meta fields for this model type.
+     * Unregister custom meta fields for this model.
      *
      * @param AbstractMeta $meta The WP_Framework Meta object or a it's key to unregister.
      * @return static The modified AbstractType instance.
@@ -120,22 +113,14 @@ abstract class AbstractModel
      */
     protected function hook_meta_actions(AbstractMeta $meta): static
     {
-        # This ABSTRACT MODEL Class is also used to descripe a MODEL TYPE.
-        # As the 'Type's inherent this method (but have a different impl of 'create_meta_options'), we need to check if we are 'model' or 'type' here to receive a type-name (or null).
-        if (property_exists($this, 'model_name')) {
-            $type_name = $this->name;
-        } else {
-            $type_name = null;
-        }
-
         # add meta input to 'edit' screens
-        foreach ($meta->get_edit_hooks($type_name) as $edit_hook) {
+        foreach ($meta->get_edit_hooks() as $edit_hook) {
             add_action($edit_hook, $meta->get_edit_callback());
         }
 
         # add save-methods
         foreach ($meta->get_save_hooks() as $save_hook) {
-            add_action($save_hook, $meta->get_save_callback($this->model_name));
+            add_action($save_hook, $meta->get_save_callback($this->name));
         }
         return $this;
     }
