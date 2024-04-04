@@ -2,9 +2,7 @@
 
 namespace WP_Framework\Model\Type;
 
-use WP_Framework\Debug\Debug;
 use WP_Framework\Model\AbstractModel;
-use WP_Framework\Model\Meta\AbstractMeta;
 use WP_Framework\Model\WP_ModelTrait;
 use WP_Framework\Utils\JsonFile;
 
@@ -17,7 +15,7 @@ abstract class AbstractType extends AbstractModel
 {
     use WP_ModelTrait;
 
-    public string $model_name;
+    protected string $model_name;
 
     public function __construct(string $model_name, string $singular_name, string $plural_name, string $description = '', string ...$taxonomy)
     {
@@ -29,6 +27,7 @@ abstract class AbstractType extends AbstractModel
             ->set_label_attribute('name', $plural_name)
             ->set_label_attribute('singular_name', $singular_name)
             ->_init($model_name);
+        $this->type_name = $this->name;
     }
 
     /**
@@ -38,7 +37,7 @@ abstract class AbstractType extends AbstractModel
      *
      * @return self The created AbstractType instance.
      */
-    public static function create_from_json(string $path, ?string $model_name = null): self
+    public static function create_from_json(string $path, ?string $model_name = null): static
     {
         # get the (sanitized) name from file name.
         $name = basename($path, '.json');
@@ -73,76 +72,6 @@ abstract class AbstractType extends AbstractModel
             $type->_set_attribute($key, $attribute);
         }
         return $type;
-    }
-
-    /**
-     * Register custom meta fields for this model type.
-     *
-     * @param AbstractMeta $meta The WP_Framework Meta object to register.
-     * @return static The modified static instance.
-     * @throws \Error If the specified meta is not registered.
-     */
-    public function register_meta(AbstractMeta $meta): static
-    {
-        $this->validate_meta_support();
-        $meta->set_key($this->model_name);
-
-        register_meta(
-            object_type: $this->model_name,
-            meta_key: $meta->key,
-            args: $this->create_meta_options($meta)
-        );
-        return $this
-            ->add_meta($meta)
-            ->hook_meta_actions($meta);
-    }
-
-    /**
-     * Unregister custom meta fields for this model type.
-     *
-     * @param AbstractMeta $meta The WP_Framework Meta object or a it's key to unregister.
-     * @return static The modified AbstractType instance.
-     */
-    public function unregister_meta(AbstractMeta $meta): static
-    {
-        unregister_meta_key($this->model_name, $meta->key);
-        return $this
-            ->remove_meta($meta)
-            ->unhook_meta_actions($meta);
-    }
-
-    /**
-     * Hook meta save and edit methods into wordpress actions for the given meta.
-     *
-     * @param AbstractMeta $meta The meta object.
-     * @return static The modified static instance.
-     */
-    protected function hook_meta_actions(AbstractMeta $meta): static
-    {
-        # add meta input to 'edit' screens
-        foreach ($meta->get_edit_hooks($this->name) as $edit_hook) {
-            add_action($edit_hook, $meta->get_edit_callback());
-        }
-
-        # add save-methods
-        foreach ($meta->get_save_hooks($this->name) as $save_hook) {
-            add_action($save_hook, $meta->get_save_callback($this->model_name));
-        }
-        return $this;
-    }
-
-    /**
-     * Creates options-array for registering meta fields.
-     *
-     * @param AbstractMeta $meta The WP_Framework Meta object.
-     *
-     * @return array The merged array of meta options.
-     */
-    protected function create_meta_options(AbstractMeta $meta): array
-    {
-        $meta_options = parent::create_meta_options($meta);
-        $meta_options['object_subtype'] = $this->name;
-        return $meta_options;
     }
 
     /**

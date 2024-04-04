@@ -59,7 +59,7 @@ trait WP_ModelTrait
      * @return self The modified instance.
      * @throws \Error If the table name is illegal.
      */
-    private function set_names(string $name, ?string $plural_name = null): self
+    private function set_names(string $name, ?string $plural_name = null): static
     {
         $this->name = sanitize_key(str_replace(' ', '_', $name));
 
@@ -75,7 +75,6 @@ trait WP_ModelTrait
             $this->table_name = Database::$table_prefix . "_" . $this->name . 's';
             SyntaxCheck::is_table_name($this->table_name);
         }
-
 
         return $this;
     }

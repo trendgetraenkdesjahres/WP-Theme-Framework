@@ -51,7 +51,7 @@ class FormControlElement extends Fragment
      * @param string $description The description for the form control element.
      * @param array $options Optional options for <select> elements ['value' => 'name', ...].
      */
-    public function __construct(string $tag_name, array $attributes, ?string $description = null, $options = [], null|bool|int|string $current_value = null)
+    public function __construct(string $tag_name, array $attributes, string $description = '', $options = [], null|bool|int|string $current_value = null)
     {
         $this->tag_name = $tag_name;
         $this->description = $description;
@@ -115,6 +115,7 @@ class FormControlElement extends Fragment
         if ($this->has_type_attribute('checkbox')) {
             $this->attributes['value'] = $this->current_value ? 'true' : 'false';
         }
+        $this->attributes['value'] = $this->current_value;
         return new Element('input', $this->attributes);
     }
 
@@ -228,7 +229,7 @@ class FormControlElement extends Fragment
 
     public function set_id_attribute(string $form_id): static
     {
-        $this->set_attribute('id', $form_id);
+        $this->set_attribute('id', $form_id, true);
         return $this;
     }
 }

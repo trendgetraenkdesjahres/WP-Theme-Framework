@@ -44,6 +44,8 @@ class CustomModel extends AbstractModel
     {
         $this->set_names($name, $plural_name);
 
+        $this->model_name = $this->name;
+
         if ($supports_meta) {
             $this->meta = [];
         }

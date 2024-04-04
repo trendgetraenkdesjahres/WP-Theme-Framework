@@ -21,6 +21,20 @@ abstract class AbstractModel
     public string $name;
 
     /**
+     * The internal name of this model.
+     *
+     * @var string
+     */
+    protected string $model_name;
+
+    /**
+     * The internal name of this model.
+     *
+     * @var string
+     */
+    protected ?string $type_name = null;
+
+    /**
      * Array to store meta fields. Null if the model does not support meta.
      *
      * @var array|null
@@ -75,9 +89,9 @@ abstract class AbstractModel
     public function register_meta(AbstractMeta $meta): static
     {
         $this->validate_meta_support();
-        $meta->set_key($this->name);
+        $meta->set_key($this->model_name);
         register_meta(
-            object_type: $this->name,
+            object_type: $this->model_name,
             meta_key: $meta->key,
             args: $this->create_meta_options($meta)
         );
@@ -95,7 +109,7 @@ abstract class AbstractModel
     public function unregister_meta(AbstractMeta $meta): static
     {
         $this->validate_meta_support();
-        unregister_meta_key($this->name, $meta->key);
+        unregister_meta_key($this->model_name, $meta->key);
         return $this
             ->remove_meta($meta)
             ->unhook_meta_actions($meta);
@@ -113,6 +127,9 @@ abstract class AbstractModel
             $default = $meta->cast_to_data_type('');
         } else {
             $default = $meta->default;
+        }
+        if ($this->type_name) {
+            $meta->options['object_subtype'] = $this->type_name;
         }
         return array_merge($meta->options, [
             'type' => $meta->type,
@@ -132,12 +149,12 @@ abstract class AbstractModel
     protected function hook_meta_actions(AbstractMeta $meta): static
     {
         # add meta input to 'edit' screens
-        foreach ($meta->get_edit_hooks() as $edit_hook) {
+        foreach ($meta->get_edit_hooks($this->type_name) as $edit_hook) {
             add_action($edit_hook, $meta->get_edit_callback());
         }
 
         # add save-methods
-        foreach ($meta->get_save_hooks() as $save_hook) {
+        foreach ($meta->get_save_hooks($this->type_name) as $save_hook) {
             add_action($save_hook, $meta->get_save_callback($this->name));
         }
         return $this;
@@ -152,12 +169,12 @@ abstract class AbstractModel
     protected function unhook_meta_actions(AbstractMeta $meta): static
     {
         # remove meta input from 'edit' screens
-        foreach ($meta->get_edit_hooks() as $edit_hook) {
+        foreach ($meta->get_edit_hooks($this->type_name) as $edit_hook) {
             remove_action($edit_hook, $meta->get_edit_callback());
         }
 
         # remove save-methods
-        foreach ($meta->get_save_hooks() as $save_hook) {
+        foreach ($meta->get_save_hooks($this->type_name) as $save_hook) {
             remove_action($save_hook, $meta->get_save_callback($this->name));
         }
         return $this;

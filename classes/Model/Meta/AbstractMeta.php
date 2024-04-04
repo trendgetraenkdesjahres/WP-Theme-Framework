@@ -208,10 +208,10 @@ abstract class AbstractMeta
     /**
      * Get the hooks used for saving the meta field.
      *
-     * @param string|null $model_name The subtype of the model associated with the meta field. If the meta field is associated with a model itself (post, user, ...) it is null.
+     * @param string|null $model_type The subtype of the model associated with the meta field. If the meta field is associated with a model itself (post, user, ...) it is null.
      * @return array The array of hooks used for saving the meta field.
      */
-    public function get_save_hooks(?string $model_name = null): array
+    public function get_save_hooks(?string $model_type = null): array
     {
         return $this->save_hooks;
     }
@@ -219,10 +219,10 @@ abstract class AbstractMeta
     /**
      * Get the hooks used for editing the meta field.
      *
-     * @param string|null $model_name The subtype of the model associated with the meta field. If the meta field is associated with a model itself (post, user, ...) it is null.
+     * @param string|null $model_type The subtype of the model associated with the meta field. If the meta field is associated with a model itself (post, user, ...) it is null.
      * @return array The array of hooks used for editing the meta field.
      */
-    public function get_edit_hooks(?string $model_name = null): array
+    public function get_edit_hooks(?string $model_type = null): array
     {
         return $this->edit_hooks;
     }

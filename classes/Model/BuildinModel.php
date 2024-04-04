@@ -2,11 +2,7 @@
 
 namespace WP_Framework\Model;
 
-use WP_Framework\Database\Database;
-use WP_Framework\Database\Table\BuildinTable;
 use WP_Framework\Model\Type\BuildinType;
-
-use function WP_CLI\Utils\pluralize;
 
 /**
  * Handles the Built-in Models in WordPress.
@@ -29,6 +25,7 @@ class BuildinModel extends AbstractModel
      */
     public function __construct(public string $name, bool $supports_meta = true, bool $supports_types = false)
     {
+        $this->model_name = $name;
         if ($supports_meta) {
             $this->meta = [];
         }

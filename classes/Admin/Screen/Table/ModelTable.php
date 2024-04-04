@@ -7,6 +7,11 @@ use WP_Framework\Model\CustomModel;
 
 class ModelTable extends Table
 {
+    /**
+     * Constructs a ModelTable instance.
+     *
+     * @param CustomModel $model The custom model associated with the table.
+     */
     public function __construct(CustomModel $model)
     {
         # call basic constructor
