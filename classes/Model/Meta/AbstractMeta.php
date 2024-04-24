@@ -2,7 +2,6 @@
 
 namespace WP_Framework\Model\Meta;
 
-use WP_Framework\Debug\Debug;
 use WP_Framework\Element\Input\FormControlElement;
 
 /**
@@ -11,14 +10,14 @@ use WP_Framework\Element\Input\FormControlElement;
 abstract class AbstractMeta
 {
     /**
-     * The unique key for the meta field.
+     * The unique internal name for the meta field.
      */
-    public string $key;
+    public string $name;
 
     /**
      * The title of the meta field.
      */
-    public string $name;
+    public string $title;
 
     /**
      * @var array The hooks used for editing the meta field.
@@ -68,25 +67,29 @@ abstract class AbstractMeta
      *
      * to be functional, the 'set_key' method needs to be called.
      *
-     * @param string $title The name (which will be displayed) of the meta field.
-     * @param string|null $description Optional. The description of the meta field to display.
-     * @param string $input_element_tag_name Optional. The HTML tag for the input element (input, textarea, select).
-     * @param string|null $input_element_type Optional. The type of the input element (for input tag).
-     * @param array|null $input_element_options Optional. The options for the input element (for select tag).
-     * @param array|null $input_element_attributes Optional. Additional attributes for the input element.
+     * @param string $title The title of the field.
+     * @param string $description The description of the field.
+     * @param string $html_input_type The input type of the field.
+     * @param array|null $html_input_attributes Optional. Additional attributes for the input element.
+     * @param string|null $default_value The default value of the field.
+     * @param array $options The options of the field.
      * @param string $display_position Optional. The position to display the input field (side, normal, advanced).
      */
-    public function __construct(string $name, FormControlElement $form_control, mixed $default = null, string $display_position = 'side')
+    public function __construct(string $title, string $description, string $html_input_type, array $html_input_attributes = [], ?string $default_value = null, $options = [], string $display_position = 'side')
     {
-        $this->name = $name;
-        $this->form_control_element = $form_control;
-        $this->type = $this->form_control_element->get_data_type();
-        $this->default = $default;
-        if ($this->default !== null && ($this->type !== gettype($this->default))) {
-            throw new \Error();
-        }
-        $this->description = $this->form_control_element->description;
+        $this->title = $title;
+        $this->name = sanitize_title($title);
         $this->input_field_position = str_validate($display_position, 'side', 'normal', 'advanced');
+
+        $html_input_attributes['type'] = $html_input_type;
+        $this->form_control_element = new FormControlElement('input', $html_input_attributes, $description, $options);
+        $this->type = $this->form_control_element->get_data_type();
+        $this->description = $this->form_control_element->description;
+
+        $this->default = $default_value;
+        if ($this->default !== null && ($this->type !== gettype($this->default))) {
+            throw new \Error("Default value must match this elements type");
+        }
     }
 
     /**
@@ -108,12 +111,12 @@ abstract class AbstractMeta
 
     public function set_key(string $model_name): static
     {
-        $this->key = sanitize_title("{$model_name}-meta-{$this->name}");
+        $this->name = sanitize_title("{$model_name}-meta-{$this->title}");
 
-        $this->form_control_element->set_name_attribute($this->key);
+        $this->form_control_element->set_name_attribute($this->name);
         $this->nonce_field = wp_nonce_field(
-            action: "{$this->key}_action",
-            name: "{$this->key}_nonce",
+            action: "{$this->name}_action",
+            name: "{$this->name}_nonce",
             referer: true,
             display: false
         );
@@ -184,7 +187,7 @@ abstract class AbstractMeta
      */
     public function get_current_value(int $object_id, string $model_name): mixed
     {
-        $value = get_metadata($model_name, $object_id, $this->key, true);
+        $value = get_metadata($model_name, $object_id, $this->name, true);
         return $this->cast_to_data_type($value);
     }
 
@@ -229,7 +232,7 @@ abstract class AbstractMeta
 
     private function is_initialzed(): bool
     {
-        if (!isset($this->key)) {
+        if (!isset($this->name)) {
             return false;
         }
 
@@ -239,10 +242,10 @@ abstract class AbstractMeta
     protected function get_posted_value()
     {
         if ($this->type == 'boolean') {
-            return isset($_POST[$this->key]);
+            return isset($_POST[$this->name]);
         } else {
             return $this->cast_to_data_type(
-                $_POST[$this->key]
+                $_POST[$this->name]
             );
         }
     }
@@ -292,10 +295,10 @@ abstract class AbstractMeta
      */
     private function is_nonce_verified()
     {
-        if (!isset($_POST["{$this->key}_nonce"])) {
+        if (!isset($_POST["{$this->name}_nonce"])) {
             return false;
         }
-        if (wp_verify_nonce($_POST["{$this->key}_nonce"], "{$this->key}_action")) {
+        if (wp_verify_nonce($_POST["{$this->name}_nonce"], "{$this->name}_action")) {
             return true;
         }
         return false;

@@ -94,7 +94,7 @@ trait WP_ScreenTrait
             }
 
             foreach ($this->screen_options as $option) {
-                add_screen_option($option->key, $option->get_args());
+                add_screen_option($option->name, $option->get_args());
             }
         });
         return $this;

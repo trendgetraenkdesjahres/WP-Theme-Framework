@@ -16,7 +16,7 @@ class Option
     /**
      * @var OptionsGroup The options group to which the option belongs.
      */
-    public OptionsGroup $group;
+    public ?OptionsGroup $group;
 
     /**
      * Option constructor.
@@ -27,11 +27,7 @@ class Option
     public function __construct(string $name, ?OptionsGroup &$group = null)
     {
         $this->name = $name;
-        if (!$group) {
-            $this->group = new OptionsGroup('options-general.php');
-        } else {
-            $this->group = $group;
-        }
+        $this->group = $group;
     }
 
     /**
@@ -41,6 +37,9 @@ class Option
      */
     public function get_value(): mixed
     {
+        if (!$this->group) {
+            return get_option($this->name);
+        }
         return $this->group->get_value($this->name);
     }
 }

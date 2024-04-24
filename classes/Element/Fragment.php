@@ -3,6 +3,7 @@
 namespace WP_Framework\Element;
 
 use DOMDocument;
+use WP_Framework\Debug\Debug;
 
 /**
  * Class Fragment
@@ -17,10 +18,10 @@ class Fragment extends AbstractElement
      *
      * @param string|Element ...$content The content, including sub-elements or strings.
      */
-    public function __construct(Element|string|null ...$content)
+    public function __construct(null|string|Element ...$content)
     {
         # init
-        $this->dom = new DOMDocument();;
+        $this->dom = new DOMDocument();
 
         # create fragment
         $this->node = $this->dom->createDocumentFragment();

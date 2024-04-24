@@ -23,6 +23,7 @@ class ModelTable extends Table
         $this->set_database_table($model->get_table());
 
         $column_prefix = $this->database_table->get_column_prefix();
+        $this->primary_column = $model->primary_propery;
 
         # create columns
         foreach ($model->properties as $property) {

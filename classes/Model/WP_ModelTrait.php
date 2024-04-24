@@ -326,11 +326,32 @@ trait WP_ModelTrait
                 unset($feature[$i]);
                 $this->types = null;
             }
+            if ($feature == 'status' && isset($this->properties["{$this->name}_status"])) {
+                unset($feature[$i]);
+                unset($this->properties["{$this->name}_status"]);
+            }
             if (($key = array_search($feature, $this->attributes['supports'])) !== false) {
                 unset($this->attributes['supports'][$key]);
             }
         }
         return $this;
+    }
+
+    public function is_supporting(string $feature): bool
+    {
+        if ($feature == 'meta' && is_array($this->meta)) {
+            return true;
+        }
+        if ($feature == 'types' && !$this instanceof AbstractType && is_array($this->types)) {
+            return true;
+        }
+        if ($feature == 'status' && isset($this->properties["{$this->name}_status"])) {
+            return true;
+        }
+        if (array_search($feature, $this->attributes['supports']) !== false) {
+            return true;
+        }
+        return false;
     }
 
 

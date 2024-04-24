@@ -199,8 +199,8 @@ class SettingsScreen extends AbstractScreen
             register_setting($this->name, $this->get_option_name());
             add_submenu_page(
                 parent_slug: $parent_name,
-                page_title: $this->singular_name,
-                menu_title: $this->singular_name,
+                page_title: $this->plural_name,
+                menu_title: $this->plural_name,
                 capability: self::$required_capabilty,
                 menu_slug: "{$parent_name}_{$this->name}",
                 callback: $this->get_display_callback(),
@@ -224,7 +224,7 @@ class SettingsScreen extends AbstractScreen
             if (!current_user_can(self::$required_capabilty)) {
                 return;
             }
-            echo "<div class='wrap'><h1>" . esc_html($this->singular_name) . "</h1><form action='options.php' method='post'>";
+            echo "<div class='wrap'><h1>" . esc_html($this->plural_name) . "</h1><form action='options.php' method='post'>";
             settings_fields($this->name);
             do_settings_sections($this->name);
             submit_button('Save');
@@ -250,5 +250,19 @@ class SettingsScreen extends AbstractScreen
     public function get_option_name(): string
     {
         return $this->name;
+    }
+
+    /**
+     * Retrieves the option group name for using with get_option.
+     *
+     * @return string The option name.
+     */
+    public function get_option_group_name(): null|string
+    {
+        $name =  $this->get_option_name();
+        if ($name === 'options-general.php') {
+            return null;
+        }
+        return $name;
     }
 }

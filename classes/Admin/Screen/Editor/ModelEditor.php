@@ -46,7 +46,7 @@ class ModelEditor
     /**
      * @var CustomInstance $instance The custom instance being edited, if any.
      */
-    protected CustomInstance $instance;
+    protected ?CustomInstance $instance;
 
     /**
      * @var bool $meta_sidebar A flag indicating whether a meta sidebar should be displayed.
@@ -62,12 +62,46 @@ class ModelEditor
     public function __construct(CustomModel $model, ?CustomInstance $instance = null)
     {
         $this->name = $model->name;
-        $this->action = 'post.php';
+
+        $this->action = "create_new";
+        $this->register_field(new Element('input', ['type' => 'hidden', 'name' => 'action', 'value' => $this->action]));
+        $this->register_field(new Element('input', ['type' => 'hidden', 'name' => 'model', 'value' => $this->name]));
+
+        add_action("admin_post_{$this->action}", $this->get_save_callback($model));
+
         $this->instance = $instance;
-        $this->meta_sidebar = $model->meta === false ? false : true;
+        $this->meta_sidebar = $model->is_supporting('meta');
         $this->add_property_form(...$model->get_properties());
     }
 
+    public function get_save_callback(CustomModel $model): callable
+    {
+        return function () use ($model) {
+            # check model
+            if ($model->name !== $_REQUEST['model']) {
+                throw new \Error("Model does not match.");
+            }
+
+            $values = [];
+            $properties = $model->get_properties();
+
+            foreach ($properties as $column_name => $property) {
+                $values[$column_name] = isset($_REQUEST[$property->key]) ? $_REQUEST[$property->key] : null;
+                if ($values[$column_name] === null && !$property->nullable) {
+                    throw new \Error("'$property->key' is empty and not nullable.");
+                }
+                # TODO validate ... better
+            }
+
+            # TODO verify success
+            $id = $model
+                ->get_table()
+                ->insert(...array_keys($values))
+                ->values(...$values)
+                ->execute()['LAST_INSERT_ID()'];
+            wp_redirect(admin_url("admin_post.php?action=edit&model={$model->name}&id={$id}}"));
+        };
+    }
     /**
      * Registers visible form fields.
      *
@@ -109,14 +143,13 @@ class ModelEditor
     /**
      * Retrieves the submit box element for the ModelEditor.
      *
-     * @return FormControlElement The submit box element.
+     * @return Element The submit box element.
      */
-    public function get_submit_box(): FormControlElement
+    public function get_submit_box(): Element
     {
-        $header = Element::from_string(
-            '<div class="postbox-header"><h2 class="hndle ui-sortable-handle">Publish</h2></div>'
+        return Element::from_string(
+            '<div class="postbox-header"><h2 class="hndle ui-sortable-handle">Publish</h2>' . get_submit_button() . '</div>'
         );
-        return new FormControlElement('input', ['type' => 'submit', 'value' => 'submit'], 'Submit');
     }
 
     /**
@@ -128,8 +161,12 @@ class ModelEditor
     protected function add_property_form(Property ...$property): static
     {
         foreach ($property as $property) {
-            # if we are editing... and not creating smt new
-            $value = null;
+
+
+            # get default value
+            $value = $property->default_value ? $property->default_value : null;
+
+            # gut current value (if we are working on an existing object)
             if ($this->instance) {
                 $value = $this->instance->{$property->key};
             }
@@ -143,29 +180,10 @@ class ModelEditor
                 $this->add_status_form($value);
                 continue;
             }
-            if ($property->key == 'title') {
-                $this->add_title_form($value);
-                continue;
-            }
 
             # default
             array_push($this->visible_forms, $property->get_form_control($value));
         }
-        return $this;
-    }
-
-    /**
-     * Adds a form element for the title property.
-     *
-     * @param string|null $value The value of the title property, if available.
-     * @return static
-     */
-    protected function add_title_form(?string $value): static
-    {
-        array_unshift(
-            $this->visible_forms,
-            FormControlElement::create_input_text("{$this->name}_title", $value)
-        );
         return $this;
     }
 
@@ -179,7 +197,7 @@ class ModelEditor
     {
         array_push(
             $this->hidden_forms,
-            FormControlElement::create_input_hidden("{$this->name}_status", $value)
+            FormControlElement::create_input_hidden("status", $value)
         );
         return $this;
     }
@@ -194,7 +212,7 @@ class ModelEditor
     {
         array_push(
             $this->hidden_forms,
-            FormControlElement::create_input_hidden("{$this->name}_type", $value)
+            FormControlElement::create_input_hidden("type", $value)
         );
         return $this;
     }
@@ -209,10 +227,11 @@ class ModelEditor
         $wrapper = new Element(
             'form',
             [
+                'method' => 'post',
                 'class' => 'fw_editor',
                 'name' => 'editor',
-                'action' => 'admin.php',
-                'id' => 'post'
+                'action' => admin_url('admin-post.php'),
+                'id' => $this->name . "_editor"
             ]
         );
         $wrapper->append_child(...$this->hidden_forms)->append_child(...$this->visible_forms);

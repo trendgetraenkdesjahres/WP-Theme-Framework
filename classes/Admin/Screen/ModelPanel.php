@@ -40,9 +40,9 @@ class ModelPanel extends AbstractScreen
     public function __construct(CustomModel $model)
     {
         # Register actions to load table and editor
+        $this->editor = new ModelEditor($model);
         add_action($this->register_hook, function () use ($model) {
             $this->table = new ModelTable($model);
-            $this->editor = new ModelEditor($model);
         });
 
         # Get the required capability for the model
@@ -92,7 +92,7 @@ class ModelPanel extends AbstractScreen
                 add_menu_page(
                     page_title: $this->plural_name,
                     menu_title: $this->plural_name,
-                    capability: $this->required_capabilty,
+                    capability: static::$required_capabilty,
                     menu_slug: $this->name,
                     callback: $this->get_table_callback(),
                     icon_url: 'none',
@@ -106,7 +106,7 @@ class ModelPanel extends AbstractScreen
                     parent_slug: "{$this->name}",
                     page_title: "Create new {$this->singular_name}",
                     menu_title: "Create new {$this->singular_name}",
-                    capability: $this->required_capabilty,
+                    capability: static::$required_capabilty,
                     menu_slug: "new_{$this->name}",
                     callback: $this->get_create_new_callback(),
                     position: 1

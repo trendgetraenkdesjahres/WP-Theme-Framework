@@ -7,7 +7,7 @@ use WP_Framework\Database\SQL\ThinSkinnedSyntaxCheck as SyntaxCheck;
 /**
  * Trait WhereClauseTrait
  *
- * This trait provides methods for constructing SQL WHERE clauses dynamically.
+ * Provides methods for constructing SQL WHERE clauses dynamically.
  * It allows building WHERE clauses for SELECT, UPDATE, DELETE, and other SQL statements.
  *
  * @package WP_Framework\Database\Statement

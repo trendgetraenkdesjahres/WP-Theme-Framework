@@ -39,6 +39,16 @@ class Database
         return $result_array;
     }
 
+    # is not checking for safe execution!! but's ok. the function calling this method should prepare the query...
+    public static function query(string $sql_query): bool
+    {
+        global $wpdb;
+        $result = $wpdb->query(
+            query: $sql_query
+        );
+        return !is_int($result) ? true : $result;
+    }
+
     public static function get_table(string $name): AbstractTable
     {
         return self::get_instance()->tables[$name];
@@ -87,7 +97,7 @@ class Database
             $query .= QueryString::create_table($model);
 
             # get the model's meta-table query
-            if ($model->meta) {
+            if ($model->is_supporting('meta')) {
                 $query .= QueryString::create_meta_table($model);
             }
         }

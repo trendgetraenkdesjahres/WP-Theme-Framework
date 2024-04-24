@@ -27,10 +27,3 @@ $user_model = new BuildinModel('user');
 $user_bio = UserMeta::create_text('user_bio', 'User Biography');
 $user_model->register_meta($book);
 ```
-
-## Agenda
- - [x] add custom meta
- - [x] add custom types
- - [x] add more factory methods
- - [ ] add foreign key to custom model properties
- - [ ] add framework shorthand methods for common use-cases

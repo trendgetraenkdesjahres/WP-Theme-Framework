@@ -67,8 +67,8 @@ class PrimarySettingsScreen extends SettingsScreen
         return function () {
             register_setting($this->name, $this->get_option_name());
             add_menu_page(
-                page_title: $this->singular_name,
-                menu_title: $this->singular_name,
+                page_title: $this->plural_name,
+                menu_title: $this->plural_name,
                 capability: self::$required_capabilty,
                 menu_slug: $this->name,
                 callback: $this->get_display_callback(),

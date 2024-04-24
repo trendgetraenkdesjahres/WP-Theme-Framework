@@ -20,7 +20,7 @@ abstract class AbstractBuildinMeta extends AbstractMeta
             update_metadata(
                 meta_type: $model,
                 object_id: $instance_id,
-                meta_key: $this->key,
+                meta_key: $this->name,
                 meta_value: $this->get_posted_value(),
             );
             return $instance_id;

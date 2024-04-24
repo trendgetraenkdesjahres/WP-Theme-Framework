@@ -4,7 +4,6 @@ namespace WP_Framework\Database\SQL\Statement;
 
 use WP_Framework\Database\Database;
 use WP_Framework\Database\Table\AbstractTable;
-use WP_Framework\Debug\Debug;
 
 /**
  * Class Select

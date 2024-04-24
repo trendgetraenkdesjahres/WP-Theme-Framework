@@ -2,6 +2,7 @@
 
 namespace WP_Framework\Element\Input;
 
+use WP_Framework\Debug\Debug;
 use WP_Framework\Element\Fragment;
 use WP_Framework\Element\Element;
 
@@ -24,23 +25,31 @@ class FormControlElement extends Fragment
     # factory methods // needs to be renamed
     public static function create_input_hidden(string $name, ?string $value)
     {
-        return new FormControlElement('input', [
-            'type' => 'hidden',
-            'name' => $name,
-            'value' => $value
-        ], $name);
+        return new FormControlElement(
+            'input',
+            [
+                'type' => 'hidden',
+                'name' => $name
+            ],
+            $name,
+            current_value: $value
+        );
     }
 
     # factory methods
     public static function create_input_text(string $name, ?string $value)
     {
-        return new FormControlElement('input', [
-            'type' => 'text',
-            'name' => $name,
-            'value' => $value,
-            'id' => $name,
-            'placeholder' => "Insert {$name}"
-        ], $name);
+        return new FormControlElement(
+            'input',
+            [
+                'type' => 'text',
+                'name' => $name,
+                'id' => $name,
+                'placeholder' => "Insert {$name}"
+            ],
+            $name,
+            current_value: $value
+        );
     }
 
     /**
@@ -162,15 +171,15 @@ class FormControlElement extends Fragment
             return 'string';
         }
 
-        if ($this->get_attribute('type') == 'number' || $this->get_attribute('type') == 'range') {
+        if ($this->get_attribute('type', false) == 'number' || $this->get_attribute('type', false) == 'range') {
             return 'integer';
         }
 
-        if ($this->get_attribute('type') == 'text') {
+        if ($this->get_attribute('type', false) == 'text') {
             return 'string';
         }
 
-        if ($this->get_attribute('type') == 'checkbox') {
+        if ($this->get_attribute('type', false) == 'checkbox') {
             return 'boolean';
         }
 

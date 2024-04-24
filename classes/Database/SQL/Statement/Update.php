@@ -2,7 +2,6 @@
 
 namespace WP_Framework\Database\SQL\Statement;
 
-
 use WP_Framework\Database\SQL\ThinSkinnedSyntaxCheck as SyntaxCheck;
 use WP_Framework\Database\Database;
 use WP_Framework\Database\Table\AbstractTable;

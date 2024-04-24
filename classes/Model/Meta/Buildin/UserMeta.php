@@ -31,7 +31,7 @@ class UserMeta extends AbstractBuildinMeta
 
             echo $this->get_nonce_field();
             echo "<table class='form-table'><tr>\n
-            <th><label for='{$this->key}'>{$this->name}</label></th>\n
+            <th><label for='{$this->name}'>{$this->title}</label></th>\n
 			<td>" . $this->get_form_control($input_field_value) . "</td>\n
 		    </tr></table>";
         };

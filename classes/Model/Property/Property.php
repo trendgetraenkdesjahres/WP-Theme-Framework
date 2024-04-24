@@ -43,7 +43,7 @@ class Property
     /**
      * @var string The default value for the property.
      */
-    public string $default_value;
+    public null|int|float|string $default_value;
 
 
     /**
@@ -64,16 +64,16 @@ class Property
      *
      * @throws \Error If the key, type, or SQL type is invalid.
      */
-    public function __construct(public string $singular_name, public string $plural_name, string $sql_type, ?string $key = null, bool $nullable = false, public bool $is_indexable = false, $default_value = null)
+    public function __construct(public string $singular_name, public string $plural_name, string $sql_type, ?string $key = null, bool $nullable = false, public bool $is_indexable = false, null|int|float|string $default_value = null)
     {
         $this->set_types($sql_type);
         $this->set_names($singular_name, $plural_name, $key);
 
         # add default value (no checks)
-        $this->default_value = $default_value !== null ? "default '$default_value'" : '';
+        $this->default_value = $default_value;
 
         # add NOT NULL value (no checks)
-        $this->nullable = $nullable ? '' : 'NOT NULL';
+        $this->nullable = $nullable;
     }
 
     /**
@@ -168,7 +168,10 @@ class Property
     protected function get_auto_form_control(): FormControlElement
     {
         $tag = '';
-        $attributes = [];
+        $attributes = ['name' => $this->key];
+        if (!$this->nullable) {
+            $attributes['required'] = 'required';
+        }
 
         switch ($this->sql_type) {
             case 'varchar':

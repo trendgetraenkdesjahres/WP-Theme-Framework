@@ -92,7 +92,7 @@ abstract class AbstractModel
         $meta->set_key($this->model_name);
         register_meta(
             object_type: $this->model_name,
-            meta_key: $meta->key,
+            meta_key: $meta->name,
             args: $this->create_meta_options($meta)
         );
         return $this
@@ -109,7 +109,7 @@ abstract class AbstractModel
     public function unregister_meta(AbstractMeta $meta): static
     {
         $this->validate_meta_support();
-        unregister_meta_key($this->model_name, $meta->key);
+        unregister_meta_key($this->model_name, $meta->name);
         return $this
             ->remove_meta($meta)
             ->unhook_meta_actions($meta);
@@ -188,7 +188,7 @@ abstract class AbstractModel
      */
     protected function add_meta(AbstractMeta $meta): static
     {
-        $this->meta[$meta->key] = $meta;
+        $this->meta[$meta->name] = $meta;
         return $this;
     }
 
@@ -201,7 +201,7 @@ abstract class AbstractModel
     protected function remove_meta(string|AbstractMeta $meta): static
     {
         if (!is_string($meta)) {
-            $meta = $meta->name;
+            $meta = $meta->title;
         }
         unset($this->meta[$meta]);
         return $this;

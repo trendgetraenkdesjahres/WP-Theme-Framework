@@ -23,6 +23,8 @@ class Table extends \WP_List_Table
      **/
     private array $columns;
 
+    protected string $primary_column;
+
     /**
      * @var array The data of the table.
      **/
@@ -73,7 +75,7 @@ class Table extends \WP_List_Table
      * @param int $rows The maximum number of rows per page.
      * @return self
      */
-    public function set_max_rows(int $rows): self
+    public function set_max_rows(int $rows): static
     {
         $this->max_rows = $rows;
         return $this;
@@ -100,9 +102,9 @@ class Table extends \WP_List_Table
      * @param string $type The type of data in the column (e.g., 'string', 'datetime').
      * @param bool $sortable Whether the column should be sortable.
      * @param bool $visible Whether the column should be visible.
-     * @return self
+     * @return static
      */
-    public function add_column(string $name, string $title, string $type = 'string', bool $sortable = false, bool $visible = true): self
+    public function add_column(string $name, string $title, string $type = 'string', bool $sortable = false, bool $visible = true): static
     {
         $this->columns[$name] = [
             'title' => $title,
@@ -127,9 +129,9 @@ class Table extends \WP_List_Table
      * Set the database table associated with this table.
      *
      * @param AbstractDBTable $table The database table object to associate.
-     * @return self
+     * @return static
      */
-    public function set_database_table(AbstractDBTable $table): self
+    public function set_database_table(AbstractDBTable $table): static
     {
         $this->database_table = $table;
         return $this;
@@ -219,6 +221,9 @@ class Table extends \WP_List_Table
      */
     public function column_default($item, $column_name)
     {
+        if (!isset($item[$column_name])) {
+            return "<pre>0</pre>";
+        }
         switch ($this->columns[$column_name]['type']) {
             case 'datetime':
                 return $item[$column_name];
@@ -270,6 +275,10 @@ class Table extends \WP_List_Table
             // If no sort, default to first column
             $orderby = $_GET['orderby'] ?? $first_column_key;
 
+            if (!isset($a[$orderby]) || !isset($b[$orderby])) {
+                return 0;
+            }
+
             // If no order, default to asc
             $order = $_GET['order'] ?? 'asc';
 
@@ -288,7 +297,7 @@ class Table extends \WP_List_Table
      */
     protected function prepare_table_headers(): self
     {
-        $primary  = 'appointment_type';
+        $primary = isset($this->primary_column) ? $this->primary_column : array_key_first($this->get_columns());
         $columns = $this->get_columns();
         $hidden_columns = $this->get_hidden_columns();
         $sortable_columns = $this->get_sortable_columns();
@@ -313,9 +322,9 @@ class Table extends \WP_List_Table
     /**
      * Sets up pagination parameters for the table.
      *
-     * @return self
+     * @return static
      */
-    protected function set_pagination(): self
+    protected function set_pagination(): static
     {
         $total_items = count($this->table_data);
         $items_per_page = $this->get_max_rows();
@@ -332,10 +341,10 @@ class Table extends \WP_List_Table
      * Sets the table data based on search parameters, if provided.
      * If no search parameters are provided, retrieves all rows from the database table.
      *
-     * @return self
+     * @return static
      * @throws \Error If the database table is not set.
      */
-    private function set_table_data(): self
+    private function set_table_data(): static
     {
         if (!$this->database_table) {
             throw new \Error("'private function get_table_data()' must be implemented, or method 'set_database_table' must be called.");

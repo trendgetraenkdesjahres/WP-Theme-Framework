@@ -4,7 +4,6 @@ namespace WP_Framework\Database\SQL;
 
 use WP_Framework\Database\Database;
 use WP_Framework\Model\CustomModel;
-use WP_Framework\Model\Property\ForeignInstance;
 
 class QueryString
 {
@@ -30,14 +29,14 @@ class QueryString
             if ($property->sql_type_size) {
                 $sql_type .= "({$property->sql_type_size})";
             }
-            # Add Column
-            $query .= "{$model->name}_{$property->key} {$sql_type} {$property->nullable} {$property->default_value},";
 
-            # Add Foreign Key
-            # mysql does not support foreign key :(
-            # if ($property instanceof ForeignProperty) {
-            #     $query .= "FOREIGN KEY ({$model->name}_{$property->key}) REFERENCES {$property->reference_table}({$property->reference_id_column}),";
-            # }
+            $default_value = $property->default_value ? "default '$property->default_value'" : '';
+
+            $property->nullable = $property->nullable ? '' : 'NOT NULL';
+
+
+            # Add Column
+            $query .= "{$model->name}_{$property->key} {$sql_type} {$property->nullable} {$default_value},";
         }
 
         # add hirarchie key

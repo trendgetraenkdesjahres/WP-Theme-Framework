@@ -54,7 +54,7 @@ abstract class AbstractScreen
      */
     private function set_names(string $name, ?string $plural_name = null): self
     {
-        $this->name = sanitize_key($name);
+        $this->name = sanitize_title($name);
         $this->singular_name = $name;
         $this->plural_name = $plural_name ? $plural_name : $name . 's';
         return $this;

@@ -3,11 +3,11 @@
 namespace WP_Framework\Model;
 
 use WP_Framework\Database\Database;
-use WP_Framework\Database\Table\CustomTable;
 use WP_Framework\Model\Instance\CustomInstance;
 use WP_Framework\Model\Instance\CustomInstanceWithMeta;
 use WP_Framework\Model\Property\ForeignInstance;
 use WP_Framework\Model\Property\Property;
+use WP_Framework\Model\Property\Status;
 use WP_Framework\Model\Type\CustomType;
 
 /**
@@ -31,6 +31,8 @@ class CustomModel extends AbstractModel
      */
     public array $properties = [];
 
+    public string $primary_propery;
+
     /**
      *
      * @param string             $name               The name of the data model.
@@ -40,22 +42,26 @@ class CustomModel extends AbstractModel
      * @param bool               $supports_hierarchy Indicates whether the model is hierarchical (objects have parents).
      * @param AbstractModel|null $owner_model        The type of owner (e.g., 'user' or a custom model).
      */
-    public  function __construct(string $name, ?string $plural_name = null, bool $supports_meta = false, bool $supports_types = false, bool $supports_hierarchy = false, ?AbstractModel $owner_model = null)
+    public  function __construct(string $name, ?string $plural_name = null, bool|array $possible_status = false, bool $supports_meta = false, bool $supports_types = false, bool $supports_hierarchy = false, ?AbstractModel $owner_model = null)
     {
         $this->set_names($name, $plural_name);
 
         $this->model_name = $this->name;
 
+        if ($possible_status) {
+            $this->initialize_status($possible_status);
+        }
+
         if ($supports_meta) {
             $this->meta = [];
         }
 
-        if ($supports_hierarchy) {
-            $this->set_attribute('hierarchical', true);
-        }
-
         if ($supports_types) {
             $this->initialize_types();
+        }
+
+        if ($supports_hierarchy) {
+            $this->set_attribute('hierarchical', true);
         }
 
         if ($owner_model) {
@@ -167,6 +173,11 @@ class CustomModel extends AbstractModel
         return $this->properties[$property];
     }
 
+    public function get_property_names(): array
+    {
+        return array_keys($this->properties);
+    }
+
     /**
      * Get properties of the model.
      *
@@ -214,6 +225,15 @@ class CustomModel extends AbstractModel
         return $this->remove_property($property);
     }
 
+    public function set_primary_property(string|Property $property): CustomModel
+    {
+        if (!is_string($property)) {
+            $property = $property->get_property_key($this);
+        }
+        $this->primary_propery = $property;
+        return $this;
+    }
+
     /**
      * Add a property to the model.
      *
@@ -227,6 +247,10 @@ class CustomModel extends AbstractModel
         $key = $property->get_property_key($this);
         # append key
         $this->properties[$key] = $property;
+        # set primary property
+        if (!isset($this->primary_propery)) {
+            $this->set_primary_property($property);
+        }
         return $this;
     }
 
@@ -269,12 +293,25 @@ class CustomModel extends AbstractModel
         return Database::create_model_meta_table_name($this->name);
     }
 
+    private function initialize_status(bool|array $possible_status): static
+    {
+        if (!is_array($possible_status)) {
+            return $this->register_property(new Status(
+                model_singular_name: $this->singular_name
+            ));
+        }
+        return $this->register_property(new Status(
+            model_singular_name: $this->singular_name,
+            possible_status: $possible_status
+        ));
+    }
+
     /**
      * Initialize types-array and registers a 'type' property.
      *
-     * @return self The modified CustomModel instance.
+     * @return static The modified CustomModel instance.
      */
-    private function initialize_types(): self
+    private function initialize_types(): static
     {
         $this->types = [];
 
@@ -283,7 +320,7 @@ class CustomModel extends AbstractModel
             key: 'type',
             sql_type: 'varchar(20)',
             singular_name: "{$this->singular_name} Type",
-            plural_name: "{$this->name} Types",
+            plural_name: "{$this->singular_name} Types",
             is_indexable: true,
             default_value: $this->name
         ));
@@ -292,9 +329,9 @@ class CustomModel extends AbstractModel
     /**
      * Registers a 'owner' property.
      *
-     * @return self The modified CustomModel instance.
+     * @return static The modified CustomModel instance.
      */
-    private function initialize_owner(AbstractModel $owner_model): self
+    private function initialize_owner(AbstractModel $owner_model): static
     {
         # add 'owner' property
         return $this->register_property(new ForeignInstance(

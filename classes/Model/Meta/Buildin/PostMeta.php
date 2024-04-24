@@ -28,8 +28,8 @@ class PostMeta extends AbstractBuildinMeta
                 );
             };
             add_meta_box(
-                id: $this->key,
-                title: $this->name,
+                id: $this->name,
+                title: $this->title,
                 callback: $meta_box_callback,
                 callback_args: [$post],
                 screen: $model_type,

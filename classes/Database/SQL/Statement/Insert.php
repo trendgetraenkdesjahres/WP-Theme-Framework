@@ -34,7 +34,7 @@ class Insert extends AbstractStatement
     /**
      * Executes the constructed INSERT statement and returns the resulting rows.
      *
-     * @return array An array of rows resulting from the executed INSERT statement.
+     * @return array An array with the element 'LAST_INSERT_ID()'.
      * @throws \Error If the VALUES clause is not completed.
      */
     public function execute(): array
@@ -47,6 +47,7 @@ class Insert extends AbstractStatement
         if ($this->columns) {
             $columns = "({$this->columns})";
         }
-        return Database::get_result("INSERT INTO {$this->table} {$columns} {$this->get_values_clause()};");
+        Database::query("INSERT INTO {$this->table} {$columns} {$this->get_values_clause()};");
+        return Database::get_result("SELECT LAST_INSERT_ID()")[0];
     }
 }

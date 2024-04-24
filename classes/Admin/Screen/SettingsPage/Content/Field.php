@@ -23,7 +23,7 @@ class Field
     /**
      * @var string The input type of the field.
      */
-    protected string $input_type;
+    protected string $html_input_type;
 
     /**
      * @var string The description of the field.
@@ -55,16 +55,16 @@ class Field
      *
      * @param string $title The title of the field.
      * @param string $description The description of the field.
-     * @param string $input_type The input type of the field.
+     * @param string $html_input_type The input type of the field.
      * @param string|null $default_value The default value of the field.
      * @param array $options The options of the field.
      */
-    public function __construct($title, $description, $input_type, ?string $default_value = null, $options = [])
+    public function __construct(string $title, string $description, string $html_input_type, ?string $default_value = null, $options = [])
     {
         $this->name = sanitize_title($title);
         $this->title = $title;
         $this->description = $description;
-        $this->input_type = $input_type;
+        $this->html_input_type = $html_input_type;
         $this->default_value = $default_value;
         $this->options = $options;
     }
@@ -103,8 +103,8 @@ class Field
     public function get_field_options(): array
     {
         return [
-            'label_for'         => $this->name,
-            'class'             => 'row'
+            'label_for' => $this->name,
+            'class' => 'row'
         ];
     }
 
@@ -115,6 +115,6 @@ class Field
      */
     protected function create_form_control()
     {
-        return new FormControlElement('input', ['type' => $this->input_type, 'id' => $this->name, 'name' => "{$this->page_options_name}[{$this->name}]"], $this->description, $this->options);
+        return new FormControlElement('input', ['type' => $this->html_input_type, 'id' => $this->name, 'name' => "{$this->page_options_name}[{$this->name}]"], $this->description, $this->options);
     }
 }

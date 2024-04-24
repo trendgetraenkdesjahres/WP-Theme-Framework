@@ -44,6 +44,11 @@ class ForeignInstance extends Property
      */
     public function get_form_control($value): FormControlElement
     {
+        $attributes = ['name' => $this->key];
+        $attributes['id'] = $this->key;
+        if (!$this->nullable) {
+            $attributes['required'] = 'required';
+        }
         $form_control = $this->form_control;
         if (!$form_control && $title_column = $this->get_buildin_property_title_column()) {
             $options = [];
@@ -58,7 +63,7 @@ class ForeignInstance extends Property
             foreach ($result as $foreign_insance) {
                 $options[$foreign_insance[$reference_table->id_column_name]] = $foreign_insance[$title_column];
             }
-            $form_control = new FormControlElement('input', ['id' => $this->key], $this->singular_name, $options);
+            $form_control = new FormControlElement('input', $attributes, $this->singular_name, $options);
         }
 
         # TODO what if i dont know the property_title_column???

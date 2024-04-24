@@ -2,8 +2,6 @@
 
 namespace WP_Framework\Model\Meta\Buildin;
 
-use WP_Framework\Debug\Debug;
-
 /**
  * Class PostMeta
  *
@@ -36,8 +34,8 @@ class TermMeta extends AbstractBuildinMeta
             }
 
             echo $this->get_nonce_field();
-            echo "<tr class='form-field {$this->key}'>\n
-			<th scope='row'><label for='{$this->key}'>{$this->name}</label></th>\n
+            echo "<tr class='form-field {$this->name}'>\n
+			<th scope='row'><label for='{$this->name}'>{$this->title}</label></th>\n
 			<td>" . $this->get_form_control($input_field_value) . "</td>\n
 		    </tr>";
         };

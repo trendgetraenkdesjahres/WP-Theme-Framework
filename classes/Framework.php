@@ -2,6 +2,8 @@
 
 namespace WP_Framework;
 
+use WP_Framework\Admin\Option\Option;
+use WP_Framework\Admin\Option\OptionsGroup;
 use WP_Framework\Admin\Screen\AbstractScreen;
 use WP_Framework\Admin\Role\Role;
 use WP_Framework\Admin\Screen\SettingsPage\BuildinSettingsScreen;
@@ -116,13 +118,73 @@ class Framework
      * Retrieves the option group by name.
      *
      * @param string $name The name of the option group to retrieve.
-     * @return array The option group array.
+     * @return OptionsGroup The option group array.
      * @throws \Error If the option group with the specified name does not exist.
      */
-    public function get_option_group(string $name): array
+    public function get_option_group(string $name, bool $throw_errors = true): OptionsGroup
     {
-        $this->has_collection_with_member('option_groups', $name, true);
+        if (!$this->has_collection_with_member('option_groups', $name, $throw_errors)) {
+            $this->option_groups[$name] = new OptionsGroup($name);
+        }
         return $this->option_groups[$name];
+    }
+
+    /**
+     * Retrieves an option by name and group.
+     *
+     * @param string $name The name of the option group to retrieve. If it contains a '/', the first part will be interpreted as group-name and the second as option-name.
+     * @param null|OptionsGroup $group The group of the option (keep empty for standart wp options).
+     * @return Option The option group array.
+     * @throws \Error If the option group with the specified name does not exist.
+     */
+    public function get_option(string $name, ?OptionsGroup &$group = null): Option
+    {
+        $name_parts = explode('/', $name, 2);
+        if (count($name_parts) > 1) {
+            return $this->get_option_by_strings($name_parts[0], $name_parts[1]);
+        }
+        if (!$group) {
+            return new Option($name);
+        }
+        $this->add_option_group_conditionally($group->name);
+        return $group->get_option($name);
+    }
+
+    protected function get_option_by_strings(string $group_name, string $option_name): Option
+    {
+        $this->add_option_group_conditionally($group_name);
+        return $this->option_groups[$group_name]->get_option($option_name);
+    }
+
+    protected function add_option_group_conditionally(string $group_name = '', ?OptionsGroup &$group = null): static
+    {
+        if ($group) {
+            if (!$this->has_collection_with_member('option_groups', $group->name)) {
+                $this->option_groups[$group->name] = $group;
+            }
+            return $this;
+        }
+        if ($group_name) {
+            $group_name = sanitize_title($group_name);
+            if (!$this->has_collection_with_member('option_groups', $group_name)) {
+                $this->option_groups[$group_name] = new OptionsGroup($group_name);
+            }
+            return $this;
+        }
+        throw new \Error("\$group_name and \$group are emtpy.");
+    }
+
+    /**
+     * Retrieves the value of an option by name and group.
+     *
+     * @param string $name The name of the option group to retrieve. If it contains a '/', the first part will be interpreted as group-name and the second as option-name.
+     * @param null|OptionsGroup $group The group of the option (keep empty for standart wp options).
+     * @return mixed The options value.
+     * @throws \Error If the option group with the specified name does not exist.
+     */
+    public function get_option_value(string $name, ?OptionsGroup &$group = null): mixed
+    {
+        return $this->get_option($name, $group)->get_value();
     }
 
     /**

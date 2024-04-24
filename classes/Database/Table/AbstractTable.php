@@ -2,6 +2,7 @@
 
 namespace WP_Framework\Database\Table;
 
+use WP_Framework\Database\SQL\Statement\Insert;
 use WP_Framework\Database\SQL\Statement\Select;
 use WP_Framework\Database\SQL\ThinSkinnedSyntaxCheck as SyntaxCheck;
 
@@ -54,25 +55,6 @@ abstract class AbstractTable
     public function select(string $column = '*', string ...$more_columns): Select
     {
         return new Select($this, $column, ...$more_columns);
-    }
-
-    /**
-     * Constructs a Statement\Select object, retrieves the results, and sets the referenced result array when the object is destructed.
-     *
-     * @param array $result The reference to the result array to be populated.
-     * @param string $column The column(s) to select.
-     * @param string ...$more_columns Additional columns to select.
-     * @return Select An instance of the Select statement builder.
-     *
-     * @note This method allows you to construct and execute a WP_Framework\Database\Statement\Select object.
-     * The SELECT statement will be executed (and the result array gets filled) when the associated Select object is destructed.
-     *
-     * @warning This method queries the database without explicitly calling the Select->execute() method.
-     * Ensure proper management of result array references to avoid unintended performance issues.
-     */
-    public function select_super(array &$result, string $column = '*', string ...$more_columns): Select
-    {
-        return (new Select($this, $column, ...$more_columns))->set_result_array($result);
     }
 
     /**
@@ -146,5 +128,23 @@ abstract class AbstractTable
             ->limit(1)
             ->execute();
         return $rows[0][$column] ?? null;
+    }
+
+    /**
+     * When not passing the column-names, you need to use the values-method, and add as many values as columns are in the table. , make sure the order of the values is in the same order as the columns in the table.
+     *
+     * @param string|AbstractTable $table The name of the table or an instance of AbstractTable
+     * @throws \InvalidArgumentException If the provided table or column names are invalid
+     */
+    public function insert(string ...$column_names): Insert
+    {
+        return new Insert($this, ...$column_names);
+    }
+
+    public function add_row(array $column_value_pairs): static
+    {
+        $colum_names = array_keys($column_value_pairs);
+        $this->insert(...$colum_names)->values(...$column_value_pairs)->execute();
+        return $this;
     }
 }
