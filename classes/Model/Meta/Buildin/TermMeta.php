@@ -3,7 +3,7 @@
 namespace WP_Framework\Model\Meta\Buildin;
 
 /**
- * Class PostMeta
+ * Class TermMeta
  *
  * Represents a term meta field in WordPress.
  */

@@ -2,7 +2,9 @@
 
 namespace WP_Framework\Model\Meta;
 
+use WP_Framework\Debug\Debug;
 use WP_Framework\Element\Input\FormControlElement;
+use WP_Framework\Model\AbstractModel;
 
 /**
  * Abstract class for creating custom meta fields in WordPress.
@@ -75,7 +77,7 @@ abstract class AbstractMeta
      * @param array $options The options of the field.
      * @param string $display_position Optional. The position to display the input field (side, normal, advanced).
      */
-    public function __construct(string $title, string $description, string $html_input_type, array $html_input_attributes = [], ?string $default_value = null, $options = [], string $display_position = 'side')
+    public function __construct(string $title, string $description, string $html_input_type, array $html_input_attributes = [], string|int|null $default_value = null, $options = [], string $display_position = 'side')
     {
         $this->title = $title;
         $this->name = sanitize_title($title);
@@ -98,7 +100,7 @@ abstract class AbstractMeta
      * @param string $model_name The model associated with the meta field.
      * @return callable The save callback function.
      */
-    abstract public function get_save_callback(string $model_name): callable;
+    abstract public function get_save_callback(AbstractModel $model): callable;
 
     /**
      * Get the edit callback function for the meta field.
@@ -257,9 +259,9 @@ abstract class AbstractMeta
      * @param string $model_name The name of the object's model.
      * @return bool True if saving is safe and secure, false otherwise.
      */
-    protected function is_saving_safe_and_secure(int $object_id, string $model_name)
+    protected function is_saving_safe_and_secure(int $object_id, AbstractModel $model)
     {
-        if (!self::is_safe_to_save($object_id, $model_name)) {
+        if (!self::is_safe_to_save($object_id, $model)) {
             return false;
         }
         return $this->is_nonce_verified();
@@ -272,13 +274,12 @@ abstract class AbstractMeta
      * @param string $model_type The name of the object's model.
      * @return bool True if it's safe to save, false otherwise.
      */
-    private static function is_safe_to_save(int $object_id, string $model_name): bool
+    private static function is_safe_to_save(int $object_id, AbstractModel $model): bool
     {
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
             return false;
         }
-
-        if (!current_user_can("edit_{$model_name}", $object_id)) {
+        if (!current_user_can($model->attributes['capabilities']['publish_posts'], $object_id)) {
             return false;
         }
 

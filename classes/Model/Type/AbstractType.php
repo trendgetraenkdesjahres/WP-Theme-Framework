@@ -30,6 +30,11 @@ abstract class AbstractType extends AbstractModel
         $this->type_name = $this->name;
     }
 
+    public function get_model_name(): string
+    {
+        return $this->model_name;
+    }
+
     /**
      * Creates a CustomType instance from a JSON file.
      *

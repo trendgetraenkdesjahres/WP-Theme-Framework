@@ -34,6 +34,10 @@ abstract class AbstractModel
      */
     protected ?string $type_name = null;
 
+
+    public array $attributes = [];
+
+
     /**
      * Array to store meta fields. Null if the model does not support meta.
      *
@@ -51,6 +55,12 @@ abstract class AbstractModel
         }
         return $this;
     }
+
+    public function get_model_name(): string
+    {
+        return $this->name;
+    }
+
     /**
      * Get a meta object of this model type.
      *
@@ -89,7 +99,7 @@ abstract class AbstractModel
     public function register_meta(AbstractMeta $meta): static
     {
         $this->validate_meta_support();
-        $meta->set_key($this->model_name);
+        $meta->set_key($this->name);
         register_meta(
             object_type: $this->model_name,
             meta_key: $meta->name,
@@ -155,7 +165,7 @@ abstract class AbstractModel
 
         # add save-methods
         foreach ($meta->get_save_hooks($this->type_name) as $save_hook) {
-            add_action($save_hook, $meta->get_save_callback($this->name));
+            add_action($save_hook, $meta->get_save_callback($this));
         }
         return $this;
     }

@@ -40,7 +40,6 @@ class Status extends Property
         if (!in_array($status, $this->possible_status)) {
             throw new \Error("\$status '{$status}' needs to be one of \$this->possible_status.");
         }
-        Debug::var('hallo', $this);
         $this->default_value = $status;
         return $this;
     }

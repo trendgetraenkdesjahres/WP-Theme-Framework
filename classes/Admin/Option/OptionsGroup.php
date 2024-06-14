@@ -2,6 +2,7 @@
 
 namespace WP_Framework\Admin\Option;
 
+use WP_Framework\Debug\Debug;
 use WP_Framework\Utils\Traits\CollectionPropertyTrait;
 
 /**
@@ -42,11 +43,14 @@ class OptionsGroup implements \Iterator
      * @param string $option_name The name of the option.
      * @return mixed The value of the option.
      */
-    public function get_value(string $option_name): mixed
+    public function get_value(string $option_name, bool $throw_errors = true): mixed
     {
-        $this->init_values();
+        $this->init_values($throw_errors);
         $option_name = sanitize_title($option_name);
         if (!isset($this->values[$option_name])) {
+            if (!$throw_errors) {
+                return null;
+            }
             throw new \Error("The option '{$option_name}' in group '{$this->name}' does not exist.");
         }
         return $this->values[$option_name];
@@ -54,7 +58,7 @@ class OptionsGroup implements \Iterator
 
     public function has_values(): bool
     {
-        $this->init_values();
+        $this->init_values(false);
         return (bool) $this->values;
     }
 
@@ -74,15 +78,54 @@ class OptionsGroup implements \Iterator
         return new Option($name, $this);
     }
 
-    protected function init_values(): static
+    public function rename_option(string $old_name, string $new_name): static
+    {
+        $value = $this->get_value($old_name);
+        $this->add_option($new_name, $value)
+            ->unset_option($old_name);
+        return $this;
+    }
+
+    public function unset_option(string $name): bool
+    {
+        if (!isset($this->values[$name])) {
+            return false;
+        }
+        unset($this->values[$name]);
+        return delete_option($this->name, $this->values);
+    }
+
+    public function add_option(string $option, mixed $value, bool $throw_errors = true): static
+    {
+        $this->init_values($throw_errors);
+        if (isset($this->values[$option])) {
+            throw new \Error("The option '{$this->name}' is already set.");
+        }
+        $this->values[$option] = $value;
+        return $this;
+    }
+
+    // does not throw any error
+    public function update_option(string $option, mixed $value): static
+    {
+        $this->init_values(false);
+        $this->values[$option] = $value;
+        update_option($this->name, $this->values);
+        return $this;
+    }
+
+    protected function init_values(bool $throw_errors = true): static
     {
         if (is_array($this->values)) {
             return $this;
         }
-        if (!is_array(
-            $values_array = get_option($this->name)
-        )) {
-            throw new \Error("Could not find an option group with the name '{$this->name}'");
+        if (
+            !is_array($values_array = get_option($this->name))
+        ) {
+            if ($throw_errors) {
+                throw new \Error("Could not find an option group with the name '{$this->name}'");
+            }
+            return $this;
         }
         $this->values = $values_array;
         return $this;

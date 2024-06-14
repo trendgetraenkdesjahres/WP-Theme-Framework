@@ -48,7 +48,7 @@ trait WP_ModelTrait
         'rewrite'
     ];
 
-    protected array $attributes = [];
+    public array $attributes = [];
 
     /**
      * Set the names properties
@@ -152,6 +152,23 @@ trait WP_ModelTrait
     protected function _set_attribute(string $key, mixed $value): self
     {
         $this->attributes[$key] = $value;
+        return $this;
+    }
+
+    /**
+     * Set a WordPress trait attribute for the model/type in the DANGEROUS way.
+     *
+     * @param string $key   The array type attribute key.
+     * @param string $value The attribute value to push into the array
+     *
+     * @return self $this
+     */
+    protected function _push_attribute_array(string $key, mixed $value): self
+    {
+        if (!is_array($this->attributes[$key]) && empty($this->attributes[$key])) {
+            $this->attributes[$key] = [];
+        }
+        array_push($this->attributes[$key], $value);
         return $this;
     }
 
@@ -288,24 +305,21 @@ trait WP_ModelTrait
     /**
      * Add support for certain features to the model/type.
      *
-     * @param string ...$feature The features to add support for.
+     * @param string $feature The feature to add support for.
      *
      * @return self $this
      */
-    public function add_support_of(string ...$feature): self
+    public function add_support_of(string $feature): self
     {
-        foreach ($feature as $i => $feature) {
-            if ($feature == 'meta' && !$this->meta) {
-                unset($feature[$i]);
-                $this->meta = [];
-            }
-            # just add type-feature if this is not already a type
-            if ($feature == 'types' && !$this->types && !$this instanceof AbstractType) {
-                unset($feature[$i]);
-                $this->types = [];
-            }
+        if ($feature == 'meta' && !$this->meta) {
+            $this->meta = [];
         }
-        return $this->_set_attribute('supports', $feature);
+        # just add type-feature if this is not already a type
+        if ($feature == 'types' && !$this->types && !$this instanceof AbstractType) {
+            $this->types = [];
+        }
+
+        return $this->_push_attribute_array('supports', $feature);
     }
 
     /**
