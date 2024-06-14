@@ -120,6 +120,7 @@ class OptionsGroup implements \Iterator
             return $this;
         }
         if (
+            $this->name != 'general' &&
             !is_array($values_array = get_option($this->name))
         ) {
             if ($throw_errors) {
